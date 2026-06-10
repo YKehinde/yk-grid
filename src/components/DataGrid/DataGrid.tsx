@@ -41,6 +41,7 @@ function DataGridInner<T>(
     emptyState,
     className,
     initialState,
+    fetchFilterOptions,
     ai,
   }: DataGridProps<T>,
   ref: React.ForwardedRef<GridRef<T>>,
@@ -117,6 +118,38 @@ function DataGridInner<T>(
     }
     return ids
   }, [columns, state.columnVisibility])
+
+  // In client mode, derive unique values for select columns that have no static filterOptions.
+  const derivedFilterOptions = useMemo<Record<string, string[]>>(() => {
+    if (dataMode !== 'client') return {}
+    const result: Record<string, string[]> = {}
+    for (const col of columns) {
+      if (col.filterType === 'select' && !col.filterOptions) {
+        const seen = new Set<string>()
+        for (const row of data) {
+          const v = col.accessor(row)
+          if (v !== null && v !== undefined && v !== '') seen.add(String(v))
+        }
+        result[col.id] = Array.from(seen).sort()
+      }
+    }
+    return result
+  }, [data, columns, dataMode])
+
+  // In server mode, fetch select options via the consumer-supplied callback.
+  const [fetchedFilterOptions, setFetchedFilterOptions] = useState<Record<string, string[]>>({})
+
+  useEffect(() => {
+    if (!fetchFilterOptions) return
+    const selectCols = columns.filter((c) => c.filterType === 'select' && !c.filterOptions)
+    for (const col of selectCols) {
+      fetchFilterOptions(col.id).then((opts) => {
+        setFetchedFilterOptions((prev) => ({ ...prev, [col.id]: opts }))
+      }).catch(() => { /* silently skip — column just won't have dynamic options */ })
+    }
+  // Re-fetch when the callback reference changes (consumer can force a refresh by re-creating it).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchFilterOptions])
 
   // Source rows after filtering — used for getProcessedRows() and CSV export.
   // Does not include group header rows.
@@ -335,6 +368,7 @@ function DataGridInner<T>(
                       value={filterEntry?.value ?? null}
                       operator={filterEntry?.operator ?? null}
                       onChange={(value, operator) => handleFilterChange(col.id, value, operator)}
+                      filterOptions={derivedFilterOptions[col.id] ?? fetchedFilterOptions[col.id]}
                     />
                   )
                 })}

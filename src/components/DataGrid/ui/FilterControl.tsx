@@ -10,6 +10,8 @@ interface Props<T> {
   // Current operator from grid state — needed to reflect AI-driven changes.
   operator: FilterEntry['operator'] | null
   onChange: (value: FilterEntry['value'] | null, operator: FilterEntry['operator']) => void
+  // Resolved options — overrides column.filterOptions (used for derived/fetched options).
+  filterOptions?: string[]
 }
 
 // Default operator per filter type.
@@ -22,7 +24,7 @@ const DEFAULT_OPERATOR: Record<NonNullable<ColumnDef<unknown>['filterType']>, Fi
 
 const DEBOUNCE_MS = 300
 
-export function FilterControl<T>({ column, value, operator, onChange }: Props<T>) {
+export function FilterControl<T>({ column, value, operator, onChange, filterOptions: resolvedOptions }: Props<T>) {
   const filterable = column.filterable !== false
   if (!filterable) return <td className={styles.cell} />
 
@@ -79,7 +81,7 @@ export function FilterControl<T>({ column, value, operator, onChange }: Props<T>
           aria-label={`Filter by ${column.header}`}
         >
           <option value="">All</option>
-          {column.filterOptions?.map((opt) => (
+          {(resolvedOptions ?? column.filterOptions)?.map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
           ))}
         </select>

@@ -78,6 +78,8 @@ export interface DataGridProps<T> {
     clearSelection: () => void
   }) => React.ReactNode
 
+  fetchFilterOptions?: (columnId: string) => Promise<string[]>
+
   ai?: { endpoint: string; placeholder?: string }
 
   initialState?: Partial<GridState>
