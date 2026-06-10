@@ -125,8 +125,22 @@ const columns: ColumnDef<Transaction>[] = [
 export default function App() {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-      <h1>yk-grid</h1>
-      <p>{transactions.length} transactions · client-side mode</p>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.375rem' }}>
+        <h1>Transactions</h1>
+        <span style={{
+          fontSize: '0.75rem',
+          fontWeight: 500,
+          color: '#3b82f6',
+          background: '#eff6ff',
+          border: '1px solid #bfdbfe',
+          borderRadius: '9999px',
+          padding: '0.125rem 0.625rem',
+          lineHeight: '1.5',
+        }}>
+          {transactions.length.toLocaleString()} rows
+        </span>
+      </div>
+      <p>Client-side mode — sorting, filtering, and pagination handled locally</p>
       <DataGrid<Transaction>
         data={transactions as Transaction[]}
         columns={columns}
