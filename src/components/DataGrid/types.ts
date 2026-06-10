@@ -26,7 +26,7 @@ export interface SortEntry {
 
 export interface FilterEntry {
   columnId: string
-  operator: 'eq' | 'contains' | 'gt' | 'lt' | 'between' | 'in'
+  operator: 'eq' | 'contains' | 'gt' | 'gte' | 'lt' | 'lte' | 'between' | 'in'
   value: string | number | Array<string | number>
 }
 

@@ -31,10 +31,20 @@ function matchesFilter(cellValue: CellValue, filter: FilterEntry): boolean {
       if (typeof cellValue === 'number') return cellValue > Number(fv)
       return String(cellValue).localeCompare(String(fv)) > 0
     }
+    case 'gte': {
+      if (cellValue instanceof Date) return cellValue.valueOf() >= toTimestamp(fv as string | number)
+      if (typeof cellValue === 'number') return cellValue >= Number(fv)
+      return String(cellValue).localeCompare(String(fv)) >= 0
+    }
     case 'lt': {
       if (cellValue instanceof Date) return cellValue.valueOf() < toTimestamp(fv as string | number)
       if (typeof cellValue === 'number') return cellValue < Number(fv)
       return String(cellValue).localeCompare(String(fv)) < 0
+    }
+    case 'lte': {
+      if (cellValue instanceof Date) return cellValue.valueOf() <= toTimestamp(fv as string | number)
+      if (typeof cellValue === 'number') return cellValue <= Number(fv)
+      return String(cellValue).localeCompare(String(fv)) <= 0
     }
     case 'between': {
       if (!Array.isArray(fv) || fv.length < 2) return true

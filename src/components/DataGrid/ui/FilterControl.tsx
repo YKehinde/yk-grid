@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { ColumnDef, FilterEntry } from '../types'
+import { NumberFilter } from './NumberFilter'
 import styles from './FilterControl.module.css'
 
 interface Props<T> {
   column: ColumnDef<T>
   // Current filter value from grid state (may be set by AI or externally).
   value: FilterEntry['value'] | null
+  // Current operator from grid state — needed to reflect AI-driven changes.
+  operator: FilterEntry['operator'] | null
   onChange: (value: FilterEntry['value'] | null, operator: FilterEntry['operator']) => void
 }
 
-// Default operator per filter type — the UI exposes one operator each.
-// All operators are available to the AI and via GridRef.setState.
+// Default operator per filter type.
 const DEFAULT_OPERATOR: Record<NonNullable<ColumnDef<unknown>['filterType']>, FilterEntry['operator']> = {
   text: 'contains',
   number: 'eq',
@@ -20,12 +22,26 @@ const DEFAULT_OPERATOR: Record<NonNullable<ColumnDef<unknown>['filterType']>, Fi
 
 const DEBOUNCE_MS = 300
 
-export function FilterControl<T>({ column, value, onChange }: Props<T>) {
+export function FilterControl<T>({ column, value, operator, onChange }: Props<T>) {
   const filterable = column.filterable !== false
   if (!filterable) return <td className={styles.cell} />
 
   const filterType = column.filterType ?? 'text'
-  const operator = DEFAULT_OPERATOR[filterType]
+  const defaultOp = DEFAULT_OPERATOR[filterType]
+
+  // Number columns render their own sub-component with operator picker.
+  if (filterType === 'number') {
+    return (
+      <td className={styles.cell}>
+        <NumberFilter
+          columnHeader={column.header}
+          value={value}
+          operator={operator}
+          onChange={onChange}
+        />
+      </td>
+    )
+  }
 
   // Local state for responsive input; debounce dispatches upstream.
   const [local, setLocal] = useState<string>(() => valueToString(value))
@@ -41,14 +57,14 @@ export function FilterControl<T>({ column, value, onChange }: Props<T>) {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       const parsed = parseValue(raw, filterType)
-      onChange(parsed, operator)
+      onChange(parsed, defaultOp)
     }, DEBOUNCE_MS)
   }
 
   function handleClear() {
     setLocal('')
     if (timerRef.current) clearTimeout(timerRef.current)
-    onChange(null, operator)
+    onChange(null, defaultOp)
   }
 
   const hasValue = local !== ''
@@ -75,7 +91,7 @@ export function FilterControl<T>({ column, value, onChange }: Props<T>) {
     <td className={styles.cell}>
       <div className={styles.inputWrapper}>
         <input
-          type={filterType === 'number' ? 'number' : filterType === 'date' ? 'date' : 'text'}
+          type={filterType === 'date' ? 'date' : 'text'}
           className={styles.input}
           value={local}
           placeholder={`Filter…`}

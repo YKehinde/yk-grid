@@ -305,6 +305,7 @@ function DataGridInner<T>(
                       key={col.id}
                       column={col}
                       value={filterEntry?.value ?? null}
+                      operator={filterEntry?.operator ?? null}
                       onChange={(value, operator) => handleFilterChange(col.id, value, operator)}
                     />
                   )

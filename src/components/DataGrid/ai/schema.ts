@@ -13,7 +13,7 @@ export const AiCommandSchema = z.object({
     .array(
       z.object({
         columnId: z.string(),
-        operator: z.enum(['eq', 'contains', 'gt', 'lt', 'between', 'in']),
+        operator: z.enum(['eq', 'contains', 'gt', 'gte', 'lt', 'lte', 'between', 'in']),
         value: z.union([
           z.string(),
           z.number(),

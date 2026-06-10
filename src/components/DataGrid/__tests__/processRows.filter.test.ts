@@ -63,15 +63,35 @@ describe('processRows — filter', () => {
     })
   })
 
-  describe('gt / lt', () => {
-    it('gt filters numbers greater than value', () => {
+  describe('gt / gte / lt / lte', () => {
+    it('gt filters numbers strictly greater than value', () => {
       expect(run([{ columnId: 'amount', operator: 'gt', value: 15 }]).map((r) => r.id))
         .toEqual(['2', '3'])
     })
 
-    it('lt filters numbers less than value', () => {
+    it('gte includes the boundary value', () => {
+      expect(run([{ columnId: 'amount', operator: 'gte', value: 20 }]).map((r) => r.id))
+        .toEqual(['2', '3'])
+    })
+
+    it('lt filters numbers strictly less than value', () => {
       expect(run([{ columnId: 'amount', operator: 'lt', value: 25 }]).map((r) => r.id))
         .toEqual(['1', '3'])
+    })
+
+    it('lte includes the boundary value', () => {
+      expect(run([{ columnId: 'amount', operator: 'lte', value: 20 }]).map((r) => r.id))
+        .toEqual(['1', '3'])
+    })
+
+    it('gt excludes the boundary value', () => {
+      expect(run([{ columnId: 'amount', operator: 'gt', value: 20 }]).map((r) => r.id))
+        .toEqual(['2'])
+    })
+
+    it('lt excludes the boundary value', () => {
+      expect(run([{ columnId: 'amount', operator: 'lt', value: 20 }]).map((r) => r.id))
+        .toEqual(['1'])
     })
   })
 
