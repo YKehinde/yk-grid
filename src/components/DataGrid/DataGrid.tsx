@@ -1,11 +1,12 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useCallback, useRef, useEffect } from 'react'
-import { DataGridProps, GridRef, ColumnDef, SortEntry, FilterEntry } from './types'
+import { DataGridProps, GridRef, ColumnDef, SortEntry, FilterEntry, DisplayRow } from './types'
 import { useGridState, buildInitialState } from './state/useGridState'
-import { processRows } from './state/processRows'
+import { processRows, filterSourceRows } from './state/processRows'
 import { paginateRows, pageCount } from './state/paginate'
 import { resolveSelection } from './state/selection'
 import { HeaderCell } from './ui/HeaderCell'
 import { FilterControl } from './ui/FilterControl'
+import { GroupRow } from './ui/GroupRow'
 import { Row } from './ui/Row'
 import { Pagination } from './ui/Pagination'
 import { Toolbar } from './ui/Toolbar'
@@ -87,18 +88,25 @@ function DataGridInner<T>(
     return ids
   }, [columns, state.columnVisibility])
 
-  // In client mode: process + paginate locally. In server mode: render as-is.
-  const processedRows = useMemo(() => {
+  // Source rows after filtering — used for getProcessedRows() and CSV export.
+  // Does not include group header rows.
+  const filteredRows = useMemo<T[]>(() => {
     if (dataMode === 'server') return data
+    return filterSourceRows(data, columns, state.filters)
+  }, [data, columns, state.filters, dataMode])
+
+  // Display rows for rendering — includes group header rows when grouping is active.
+  const allDisplayRows = useMemo<DisplayRow<T>[]>(() => {
+    if (dataMode === 'server') return data.map((row) => ({ _type: 'data' as const, row }))
     return processRows(data, columns, state)
   }, [data, columns, state, dataMode])
 
-  const displayRows = useMemo(() => {
-    if (dataMode === 'server') return data
-    return paginateRows(processedRows, state.pagination)
-  }, [processedRows, data, state.pagination, dataMode])
+  const displayRows = useMemo<DisplayRow<T>[]>(() => {
+    if (dataMode === 'server') return allDisplayRows
+    return paginateRows(allDisplayRows, state.pagination)
+  }, [allDisplayRows, state.pagination, dataMode])
 
-  const totalRows = dataMode === 'server' ? (rowCount ?? 0) : processedRows.length
+  const totalRows = dataMode === 'server' ? (rowCount ?? 0) : allDisplayRows.length
   const pages = pageCount(totalRows, state.pagination.pageSize)
 
   const selectedRows = useMemo(
@@ -129,7 +137,7 @@ function DataGridInner<T>(
 
   useImperativeHandle(ref, () => ({
     getSelectedRows: () => resolveSelection(state.selection, data, getRowId),
-    getProcessedRows: () => processedRows as T[],
+    getProcessedRows: () => filteredRows,
     getGridState: () => state,
     clearSelection: () => dispatch({ type: 'CLEAR_SELECTION' }),
     exportCsv: () => { /* phase 7 */ },
@@ -198,17 +206,30 @@ function DataGridInner<T>(
                 </td>
               </tr>
             ) : (
-              displayRows.map((row, i) => (
-                <Row
-                  key={getRowId(row)}
-                  row={row}
-                  rowIndex={i}
-                  columns={columns}
-                  visibleColumnIds={visibleColumnIds}
-                  onRowClick={onRowClick}
-                  onCellClick={onCellClick}
-                />
-              ))
+              displayRows.map((displayRow, i) => {
+                if (displayRow._type === 'group') {
+                  return (
+                    <GroupRow
+                      key={displayRow.id}
+                      row={displayRow}
+                      columns={columns}
+                      visibleColumnIds={visibleColumnIds}
+                      onToggle={() => dispatch({ type: 'TOGGLE_EXPAND', groupId: displayRow.id })}
+                    />
+                  )
+                }
+                return (
+                  <Row
+                    key={getRowId(displayRow.row)}
+                    row={displayRow.row}
+                    rowIndex={i}
+                    columns={columns}
+                    visibleColumnIds={visibleColumnIds}
+                    onRowClick={onRowClick}
+                    onCellClick={onCellClick}
+                  />
+                )
+              })
             )}
           </tbody>
         </table>

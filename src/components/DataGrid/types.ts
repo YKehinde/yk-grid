@@ -85,6 +85,26 @@ export interface DataGridProps<T> {
   className?: string
 }
 
+// --- Display row types (used for rendering; includes group header rows) ---
+
+export interface GroupHeaderRow {
+  _type: 'group'
+  id: string
+  columnId: string
+  value: string | number | Date | null
+  depth: number
+  childCount: number
+  aggregates: Record<string, number | null>
+  isExpanded: boolean
+}
+
+export interface DataDisplayRow<T> {
+  _type: 'data'
+  row: T
+}
+
+export type DisplayRow<T> = GroupHeaderRow | DataDisplayRow<T>
+
 export interface GridRef<T> {
   getSelectedRows: () => T[]
   getProcessedRows: () => T[]
