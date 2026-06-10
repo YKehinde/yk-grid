@@ -1,0 +1,54 @@
+.th {
+  user-select: none;
+}
+
+.sortable {
+  cursor: pointer;
+}
+
+.sortable:hover {
+  background: var(--grid-row-hover-bg);
+}
+
+.sortable:focus-visible {
+  outline: none;
+  box-shadow: var(--grid-focus-ring);
+}
+
+.label {
+  display: inline-block;
+  margin-right: 0.25rem;
+}
+
+.indicators {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  font-size: 0.75em;
+  vertical-align: middle;
+  color: currentColor;
+  opacity: 0.6;
+}
+
+.th[aria-sort="ascending"] .indicators,
+.th[aria-sort="descending"] .indicators {
+  opacity: 1;
+}
+
+.arrow {
+  font-size: 0.85em;
+}
+
+.arrowIdle {
+  font-size: 0.85em;
+  opacity: 0.4;
+}
+
+.sortIndex {
+  font-size: 0.7em;
+  font-weight: 600;
+  background: var(--grid-border-colour);
+  border-radius: 2px;
+  padding: 0 2px;
+  line-height: 1.4;
+}

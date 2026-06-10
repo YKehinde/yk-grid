@@ -1,5 +1,5 @@
-import React, { forwardRef, useImperativeHandle, useMemo } from 'react'
-import { DataGridProps, GridRef, ColumnDef } from './types'
+import React, { forwardRef, useImperativeHandle, useMemo, useCallback } from 'react'
+import { DataGridProps, GridRef, ColumnDef, SortEntry } from './types'
 import { useGridState, buildInitialState } from './state/useGridState'
 import { processRows } from './state/processRows'
 import { paginateRows, pageCount } from './state/paginate'
@@ -35,6 +35,25 @@ function DataGridInner<T>(
     [],
   )
   const { state, dispatch } = useGridState(initState)
+
+  // Cycles: none → asc → desc → none.
+  // Shift-click adds to the multi-sort stack rather than replacing.
+  const handleSort = useCallback((columnId: string, multi: boolean) => {
+    const existing = state.sorts.find((s) => s.columnId === columnId)
+    let next: SortEntry[]
+
+    if (!existing) {
+      const entry: SortEntry = { columnId, direction: 'asc' }
+      next = multi ? [...state.sorts, entry] : [entry]
+    } else if (existing.direction === 'asc') {
+      next = state.sorts.map((s) => s.columnId === columnId ? { ...s, direction: 'desc' as const } : s)
+    } else {
+      // desc → remove
+      next = state.sorts.filter((s) => s.columnId !== columnId)
+    }
+
+    dispatch({ type: 'SET_SORT', sorts: next })
+  }, [state.sorts, dispatch])
 
   // Compute visible column ids from columnVisibility state
   const visibleColumnIds = useMemo(() => {
@@ -98,9 +117,19 @@ function DataGridInner<T>(
         <table className={styles.table} role="grid">
           <thead>
             <tr>
-              {visibleColumns.map((col) => (
-                <HeaderCell key={col.id} column={col} />
-              ))}
+              {visibleColumns.map((col) => {
+                const sortIndex = state.sorts.findIndex((s) => s.columnId === col.id)
+                return (
+                  <HeaderCell
+                    key={col.id}
+                    column={col}
+                    sortEntry={sortIndex >= 0 ? state.sorts[sortIndex] : undefined}
+                    sortIndex={sortIndex}
+                    totalSorts={state.sorts.length}
+                    onSort={handleSort}
+                  />
+                )
+              })}
             </tr>
           </thead>
           <tbody>
