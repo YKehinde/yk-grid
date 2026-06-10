@@ -5,6 +5,8 @@ import { processRows, filterSourceRows } from './state/processRows'
 import { paginateRows, pageCount } from './state/paginate'
 import { resolveSelection } from './state/selection'
 import { exportCsv, triggerCsvDownload } from './state/exportCsv'
+import { applyCommand } from './ai/applyCommand'
+import { AiCommand } from './ai/schema'
 import { HeaderCell } from './ui/HeaderCell'
 import { FilterControl } from './ui/FilterControl'
 import { GroupRow } from './ui/GroupRow'
@@ -13,6 +15,7 @@ import { SelectionCell } from './ui/SelectionCell'
 import { Pagination } from './ui/Pagination'
 import { Toolbar } from './ui/Toolbar'
 import { ColumnMenu } from './ui/ColumnMenu'
+import { AiBar } from './ui/AiBar'
 import styles from './DataGrid.module.css'
 
 function DataGridInner<T>(
@@ -38,6 +41,7 @@ function DataGridInner<T>(
     emptyState,
     className,
     initialState,
+    ai,
   }: DataGridProps<T>,
   ref: React.ForwardedRef<GridRef<T>>,
 ) {
@@ -219,6 +223,13 @@ function DataGridInner<T>(
     triggerCsvDownload(csv, csvFilename)
   }, [state.selection, data, getRowId, filteredRows, columns, csvFilename])
 
+  const knownColumnIds = useMemo(() => new Set(columns.map((c) => c.id)), [columns])
+
+  const handleAiCommand = useCallback((command: AiCommand) => {
+    const actions = applyCommand(command, knownColumnIds)
+    actions.forEach((action) => dispatch(action))
+  }, [knownColumnIds, dispatch])
+
   useImperativeHandle(ref, () => ({
     getSelectedRows: () => resolveSelection(state.selection, data, getRowId),
     getProcessedRows: () => filteredRows,
@@ -249,6 +260,16 @@ function DataGridInner<T>(
         toolbarActions={toolbarActions}
         columns={columns}
       />
+
+      {ai && (
+        <AiBar
+          endpoint={ai.endpoint}
+          placeholder={ai.placeholder}
+          columns={columns}
+          gridState={state}
+          onCommand={handleAiCommand}
+        />
+      )}
 
       <div className={styles.tableContainer}>
         {loading && (
