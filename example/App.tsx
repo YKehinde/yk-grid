@@ -76,6 +76,7 @@ const columns: ColumnDef<Transaction>[] = [
     sortable: true,
     filterable: true,
     filterType: 'select',
+    filterOptions: ['purchase', 'refund'],
     cell: (_, row) => <span style={TYPE_STYLES[row.type]}>{row.type}</span>,
     width: 100,
   },
@@ -86,6 +87,7 @@ const columns: ColumnDef<Transaction>[] = [
     sortable: true,
     filterable: true,
     filterType: 'select',
+    filterOptions: ['completed', 'failed', 'pending'],
     cell: (_, row) => <span style={STATUS_STYLES[row.status]}>{row.status}</span>,
     width: 110,
   },
@@ -96,6 +98,7 @@ const columns: ColumnDef<Transaction>[] = [
     sortable: true,
     filterable: true,
     filterType: 'select',
+    filterOptions: ['GBP', 'USD', 'EUR'],
     width: 70,
   },
   {

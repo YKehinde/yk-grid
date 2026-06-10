@@ -268,6 +268,7 @@ function DataGridInner<T>(
           columns={columns}
           gridState={state}
           onCommand={handleAiCommand}
+          onReset={() => dispatch({ type: 'RESET' })}
         />
       )}
 

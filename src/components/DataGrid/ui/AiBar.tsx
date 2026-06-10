@@ -10,11 +10,12 @@ interface Props<T> {
   columns: ColumnDef<T>[]
   gridState: GridState
   onCommand: (command: AiCommand) => void
+  onReset: () => void
 }
 
 type Status = 'idle' | 'loading' | 'error'
 
-export function AiBar<T>({ endpoint, placeholder, columns, gridState, onCommand }: Props<T>) {
+export function AiBar<T>({ endpoint, placeholder, columns, gridState, onCommand, onReset }: Props<T>) {
   const [prompt, setPrompt] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [explanation, setExplanation] = useState<string | null>(null)
@@ -77,9 +78,18 @@ export function AiBar<T>({ endpoint, placeholder, columns, gridState, onCommand 
       </form>
 
       {explanation && status === 'idle' && (
-        <p className={styles.explanation} role="status" aria-live="polite">
-          {explanation}
-        </p>
+        <div className={styles.resultRow}>
+          <p className={styles.explanation} role="status" aria-live="polite">
+            {explanation}
+          </p>
+          <button
+            type="button"
+            className={styles.clearBtn}
+            onClick={() => { setExplanation(null); onReset() }}
+          >
+            Clear
+          </button>
+        </div>
       )}
 
       {errorMsg && status === 'error' && (
