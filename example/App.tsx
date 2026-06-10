@@ -147,6 +147,7 @@ export default function App() {
         getRowId={(r) => r.id}
         dataMode="client"
         pageSize={15}
+        ai={{ endpoint: '/api/grid-ai', placeholder: 'e.g. "show failed refunds over £200, sorted by amount"' }}
       />
     </div>
   )
