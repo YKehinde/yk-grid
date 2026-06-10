@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useCallback } from 'react'
+import React, { forwardRef, useImperativeHandle, useMemo, useCallback, useRef, useEffect } from 'react'
 import { DataGridProps, GridRef, ColumnDef, SortEntry, FilterEntry } from './types'
 import { useGridState, buildInitialState } from './state/useGridState'
 import { processRows } from './state/processRows'
@@ -106,6 +106,27 @@ function DataGridInner<T>(
     [state.selection, data, getRowId],
   )
 
+  // onStateChange fires only when the query (sorts/filters/grouping/pagination) changes —
+  // not when selection, column sizing, or visibility change, as those don't need a refetch.
+  // Use a ref for the callback to avoid adding it to the effect dependency array
+  // (consumers often pass an inline function and we don't want to re-fire on every render).
+  const onStateChangeRef = useRef(onStateChange)
+  useEffect(() => { onStateChangeRef.current = onStateChange }, [onStateChange])
+
+  const prevQueryRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (dataMode !== 'server') return
+    const queryStr = JSON.stringify({
+      sorts: state.sorts,
+      filters: state.filters,
+      grouping: state.grouping,
+      pagination: state.pagination,
+    })
+    if (queryStr === prevQueryRef.current) return
+    prevQueryRef.current = queryStr
+    onStateChangeRef.current?.(state)
+  }, [state, dataMode])
+
   useImperativeHandle(ref, () => ({
     getSelectedRows: () => resolveSelection(state.selection, data, getRowId),
     getProcessedRows: () => processedRows as T[],
@@ -119,13 +140,6 @@ function DataGridInner<T>(
     },
   }))
 
-  // Notify parent of state changes in server mode
-  React.useEffect(() => {
-    if (dataMode === 'server') onStateChange?.(state)
-  // Only fire when state changes, not on every render
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, dataMode])
-
   const visibleColumns: ColumnDef<T>[] = columns.filter((c) => visibleColumnIds.has(c.id))
 
   const hasFilterableColumn = visibleColumns.some((c) => c.filterable !== false)
@@ -135,7 +149,11 @@ function DataGridInner<T>(
       <Toolbar />
 
       <div className={styles.tableContainer}>
-        {loading && <div aria-live="polite" aria-label="Loading" />}
+        {loading && (
+          <div className={styles.loadingOverlay} role="status" aria-label="Loading">
+            <div className={styles.spinner} />
+          </div>
+        )}
 
         <table className={styles.table} role="grid">
           <thead>
@@ -199,7 +217,10 @@ function DataGridInner<T>(
       <Pagination
         pageIndex={state.pagination.pageIndex}
         pageCount={pages}
+        pageSize={state.pagination.pageSize}
+        totalRows={totalRows}
         onPageChange={(page) => dispatch({ type: 'SET_PAGE', pageIndex: page })}
+        onPageSizeChange={(size) => dispatch({ type: 'SET_PAGE_SIZE', pageSize: size })}
       />
 
       {/* Expose selectedRows count for future toolbar — phase 7 */}
