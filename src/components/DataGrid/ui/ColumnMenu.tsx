@@ -1,43 +1,46 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { ColumnDef } from '../types'
 import styles from './ColumnMenu.module.css'
 
 interface Props<T> {
   columns: ColumnDef<T>[]
   columnVisibility: Record<string, boolean>
+  anchorRect: DOMRect
   onToggleColumn: (columnId: string, visible: boolean) => void
   onClose: () => void
 }
 
-export function ColumnMenu<T>({ columns, columnVisibility, onToggleColumn, onClose }: Props<T>) {
+export function ColumnMenu<T>({ columns, columnVisibility, anchorRect, onToggleColumn, onClose }: Props<T>) {
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Close on click outside
   useEffect(() => {
     function handlePointerDown(e: PointerEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         onClose()
       }
     }
-    document.addEventListener('pointerdown', handlePointerDown)
-    return () => document.removeEventListener('pointerdown', handlePointerDown)
-  }, [onClose])
-
-  // Close on Escape
-  useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose()
     }
+    function handleScroll() { onClose() }
+    document.addEventListener('pointerdown', handlePointerDown)
     document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('scroll', handleScroll, { capture: true, passive: true })
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('scroll', handleScroll, { capture: true })
+    }
   }, [onClose])
 
   const hideableColumns = columns.filter((c) => c.hideable !== false)
 
-  return (
+  return createPortal(
     <div
       ref={menuRef}
       className={styles.menu}
+      style={{ top: anchorRect.bottom + 2, left: anchorRect.left }}
       role="dialog"
       aria-label="Column visibility"
     >
@@ -60,6 +63,7 @@ export function ColumnMenu<T>({ columns, columnVisibility, onToggleColumn, onClo
           )
         })}
       </ul>
-    </div>
+    </div>,
+    document.body,
   )
 }

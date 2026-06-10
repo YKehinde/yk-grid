@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { FilterEntry } from '../types'
 import styles from './NumberFilter.module.css'
 
@@ -27,9 +28,11 @@ export function NumberFilter({ columnHeader, value, operator: externalOperator, 
   const [from, setFrom] = useState<string>(() => initFrom(value))
   const [to, setTo] = useState<string>(() => initTo(value))
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null)
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLUListElement>(null)
 
   // Sync from external state changes (AI command, GridRef.setState, etc.).
   // op is only overwritten when an external operator is explicitly present —
@@ -42,17 +45,34 @@ export function NumberFilter({ columnHeader, value, operator: externalOperator, 
     setTo(initTo(value))
   }, [value, externalOperator])
 
-  // Close menu on click outside
+  // Close menu on pointerdown outside trigger or menu.
   useEffect(() => {
     if (!menuOpen) return
     function handlePointerDown(e: PointerEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
         setMenuOpen(false)
       }
     }
+    // Close if the user scrolls (menu is fixed but table moves underneath).
+    function handleScroll() { setMenuOpen(false) }
     document.addEventListener('pointerdown', handlePointerDown)
-    return () => document.removeEventListener('pointerdown', handlePointerDown)
+    window.addEventListener('scroll', handleScroll, { capture: true, passive: true })
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('scroll', handleScroll, { capture: true })
+    }
   }, [menuOpen])
+
+  function openMenu() {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    setMenuPos({ top: rect.bottom + 2, left: rect.left })
+    setMenuOpen(true)
+  }
 
   function fire(nextOp: NumberOperator, nextFrom: string, nextTo: string) {
     if (timerRef.current) clearTimeout(timerRef.current)
@@ -72,7 +92,6 @@ export function NumberFilter({ columnHeader, value, operator: externalOperator, 
   function handleOperatorSelect(next: NumberOperator) {
     setOp(next)
     setMenuOpen(false)
-    // Reset to field when switching away from between, keep from value
     fire(next, from, to)
   }
 
@@ -98,35 +117,43 @@ export function NumberFilter({ columnHeader, value, operator: externalOperator, 
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.operatorWrapper} ref={menuRef}>
-        <button
-          type="button"
-          className={[styles.operatorBtn, menuOpen && styles.operatorBtnOpen].filter(Boolean).join(' ')}
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label={`Filter operator: ${current.label}`}
-          aria-expanded={menuOpen}
-          aria-haspopup="listbox"
-          title={current.label}
+      <button
+        ref={triggerRef}
+        type="button"
+        className={[styles.operatorBtn, menuOpen && styles.operatorBtnOpen].filter(Boolean).join(' ')}
+        onClick={() => menuOpen ? setMenuOpen(false) : openMenu()}
+        aria-label={`Filter operator: ${current.label}`}
+        aria-expanded={menuOpen}
+        aria-haspopup="listbox"
+        title={current.label}
+      >
+        {current.symbol}
+      </button>
+
+      {menuOpen && menuPos && createPortal(
+        <ul
+          ref={menuRef}
+          className={styles.menu}
+          style={{ top: menuPos.top, left: menuPos.left }}
+          role="listbox"
+          aria-label="Filter operator"
         >
-          {current.symbol}
-        </button>
-        {menuOpen && (
-          <ul className={styles.menu} role="listbox" aria-label="Filter operator">
-            {OPERATORS.map((o) => (
-              <li
-                key={o.value}
-                role="option"
-                aria-selected={o.value === op}
-                className={[styles.menuItem, o.value === op && styles.menuItemActive].filter(Boolean).join(' ')}
-                onClick={() => handleOperatorSelect(o.value)}
-              >
-                <span className={styles.menuSymbol}>{o.symbol}</span>
-                <span>{o.label}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+          {OPERATORS.map((o) => (
+            <li
+              key={o.value}
+              role="option"
+              aria-selected={o.value === op}
+              className={[styles.menuItem, o.value === op && styles.menuItemActive].filter(Boolean).join(' ')}
+              onPointerDown={(e) => e.preventDefault()} // prevent blur before click
+              onClick={() => handleOperatorSelect(o.value)}
+            >
+              <span className={styles.menuSymbol}>{o.symbol}</span>
+              <span>{o.label}</span>
+            </li>
+          ))}
+        </ul>,
+        document.body,
+      )}
 
       <div className={styles.inputs}>
         <input

@@ -50,9 +50,14 @@ function DataGridInner<T>(
 
   // Column menu open state — only one column menu can be open at a time.
   const [menuOpenForColumn, setMenuOpenForColumn] = useState<string | null>(null)
+  const [menuAnchorRect, setMenuAnchorRect] = useState<DOMRect | null>(null)
 
-  const handleToggleMenu = useCallback((columnId: string) => {
-    setMenuOpenForColumn((prev) => prev === columnId ? null : columnId)
+  const handleToggleMenu = useCallback((columnId: string, anchorRect: DOMRect) => {
+    setMenuOpenForColumn((prev) => {
+      if (prev === columnId) { setMenuAnchorRect(null); return null }
+      setMenuAnchorRect(anchorRect)
+      return columnId
+    })
   }, [])
 
   const handleColumnVisibilityToggle = useCallback((columnId: string, visible: boolean) => {
@@ -282,10 +287,11 @@ function DataGridInner<T>(
                     menuOpen={isMenuOpen}
                     onToggleMenu={handleToggleMenu}
                     columnMenuSlot={
-                      enableColumnVisibility && isMenuOpen ? (
+                      enableColumnVisibility && isMenuOpen && menuAnchorRect ? (
                         <ColumnMenu
                           columns={columns}
                           columnVisibility={state.columnVisibility}
+                          anchorRect={menuAnchorRect}
                           onToggleColumn={handleColumnVisibilityToggle}
                           onClose={() => setMenuOpenForColumn(null)}
                         />

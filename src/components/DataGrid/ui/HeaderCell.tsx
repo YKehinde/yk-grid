@@ -13,7 +13,7 @@ interface Props<T> {
   onResize?: (columnId: string, width: number) => void
   enableMenu?: boolean
   menuOpen?: boolean
-  onToggleMenu?: (columnId: string) => void
+  onToggleMenu?: (columnId: string, anchorRect: DOMRect) => void
   columnMenuSlot?: React.ReactNode
 }
 
@@ -103,7 +103,7 @@ export function HeaderCell<T>({
         <button
           type="button"
           className={[styles.menuBtn, menuOpen && styles.menuBtnOpen].filter(Boolean).join(' ')}
-          onClick={(e) => { e.stopPropagation(); onToggleMenu?.(column.id) }}
+          onClick={(e) => { e.stopPropagation(); onToggleMenu?.(column.id, e.currentTarget.getBoundingClientRect()) }}
           aria-label={`Column options for ${column.header}`}
           aria-expanded={menuOpen}
           tabIndex={-1}
