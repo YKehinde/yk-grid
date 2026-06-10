@@ -147,5 +147,26 @@ describe('NumberFilter', () => {
       expect(min.value).toBe('10')
       expect(max.value).toBe('50')
     })
+
+    it('does not reset operator to eq when filter is cleared externally (operator becomes null)', () => {
+      // Regression: selecting an operator with no value clears the filter,
+      // making operator prop null, which previously reset the picker to '='.
+      const { rerender, onChange } = renderFilter()
+      // Select 'greater than'
+      fireEvent.click(screen.getByRole('button', { name: /Filter operator/ }))
+      fireEvent.click(screen.getAllByRole('option')[1]) // gt
+      expect(screen.getByRole('button', { name: /Greater than/ })).toBeDefined()
+      // Simulate the external state coming back with null operator (filter cleared)
+      rerender(
+        <NumberFilter
+          columnHeader="Amount"
+          value={null}
+          operator={null}
+          onChange={onChange}
+        />,
+      )
+      // Operator picker should STILL show Greater than, not reset to Equals
+      expect(screen.getByRole('button', { name: /Greater than/ })).toBeDefined()
+    })
   })
 })

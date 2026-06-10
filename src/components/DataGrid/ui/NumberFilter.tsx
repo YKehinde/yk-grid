@@ -31,9 +31,13 @@ export function NumberFilter({ columnHeader, value, operator: externalOperator, 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Sync from external state changes (AI command, reset, etc.)
+  // Sync from external state changes (AI command, GridRef.setState, etc.).
+  // op is only overwritten when an external operator is explicitly present —
+  // null means the filter was cleared, so we preserve the user's picker choice.
   useEffect(() => {
-    setOp(toNumberOp(externalOperator))
+    if (externalOperator !== null) {
+      setOp(toNumberOp(externalOperator))
+    }
     setFrom(initFrom(value))
     setTo(initTo(value))
   }, [value, externalOperator])
