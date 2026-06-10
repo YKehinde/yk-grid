@@ -1,10 +1,15 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { handleGridAiRequest } from './server/gridAiRoute'
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
+  // Merge env from project root and example/ so .env.local works in either location.
+  const env = {
+    ...loadEnv(mode, process.cwd(), ''),
+    ...loadEnv(mode, path.join(process.cwd(), 'example'), ''),
+  }
   Object.assign(process.env, env)
 
   return {
