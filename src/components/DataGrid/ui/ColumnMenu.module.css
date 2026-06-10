@@ -44,5 +44,5 @@
 }
 
 .checkbox {
-  accent-color: var(--grid-focus-ring, #3b82f6);
+  accent-color: var(--grid-accent, #6366f1);
 }

@@ -1,19 +1,21 @@
 .toolbar {
   display: flex;
   align-items: center;
-  gap: var(--grid-toolbar-gap, 8px);
-  padding: 6px 8px;
+  gap: var(--grid-toolbar-gap, 0.5rem);
+  padding: 0.625rem 0.875rem;
   border-bottom: 1px solid var(--grid-border-colour, #e2e8f0);
-  min-height: 40px;
+  background: var(--grid-header-bg, #f1f5f9);
+  min-height: 2.75rem;
   flex-wrap: wrap;
 }
 
 .selectionCount {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.875em;
-  color: var(--grid-header-bg, #334155);
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #334155;
 }
 
 .clearBtn {
@@ -22,25 +24,33 @@
   cursor: pointer;
   font-size: 1rem;
   line-height: 1;
-  color: inherit;
-  padding: 0 2px;
-  opacity: 0.6;
+  color: #64748b;
+  padding: 0 0.125rem;
+  border-radius: 2px;
 }
 
 .clearBtn:hover {
-  opacity: 1;
+  color: #334155;
 }
 
 .exportBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
   margin-left: auto;
-  padding: 4px 12px;
-  border: 1px solid var(--grid-border-colour, #e2e8f0);
-  border-radius: var(--grid-radius, 4px);
-  background: none;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: #374151;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: var(--grid-radius, 0.375rem);
   cursor: pointer;
-  font-size: 0.875em;
+  transition: background 0.1s, border-color 0.1s;
 }
 
 .exportBtn:hover {
-  background: var(--grid-row-hover-bg, #f8fafc);
+  background: #f9fafb;
+  border-color: #9ca3af;
 }

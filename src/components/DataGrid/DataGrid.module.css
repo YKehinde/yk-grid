@@ -3,8 +3,9 @@
   --grid-border-colour: #e2e8f0;
   --grid-header-bg: #f1f5f9;
   --grid-row-hover-bg: #f8fafc;
-  --grid-selected-bg: #eff6ff;
-  --grid-focus-ring: 0 0 0 2px #3b82f6;
+  --grid-selected-bg: #eef2ff;
+  --grid-accent: #6366f1;
+  --grid-focus-ring: 0 0 0 2px #6366f1;
   --grid-radius: 0.5rem;
   --grid-cell-padding: 0.625rem 0.875rem;
   --grid-toolbar-gap: 0.5rem;
@@ -75,6 +76,10 @@
   position: sticky;
   top: 0;
   z-index: 1;
+}
+
+.table tbody tr {
+  transition: background 0.1s ease;
 }
 
 .table tbody tr:hover {
