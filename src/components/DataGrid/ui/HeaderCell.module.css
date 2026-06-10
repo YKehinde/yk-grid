@@ -1,5 +1,48 @@
 .th {
   user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.menuBtn {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  opacity: 0;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 2px;
+}
+
+.th:hover .menuBtn,
+.menuBtnOpen {
+  opacity: 1 !important;
+}
+
+.menuBtn:focus-visible {
+  outline: 2px solid var(--grid-focus-ring, #3b82f6);
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  border-right: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.resizeHandle:hover,
+.resizeHandle:active {
+  border-right-color: var(--grid-focus-ring, #3b82f6);
 }
 
 .sortable {

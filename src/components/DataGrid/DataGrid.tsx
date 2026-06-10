@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useCallback, useRef, useEffect } from 'react'
+import React, { forwardRef, useImperativeHandle, useMemo, useCallback, useRef, useEffect, useState } from 'react'
 import { DataGridProps, GridRef, ColumnDef, SortEntry, FilterEntry, DisplayRow } from './types'
 import { useGridState, buildInitialState } from './state/useGridState'
 import { processRows, filterSourceRows } from './state/processRows'
@@ -12,6 +12,7 @@ import { Row } from './ui/Row'
 import { SelectionCell } from './ui/SelectionCell'
 import { Pagination } from './ui/Pagination'
 import { Toolbar } from './ui/Toolbar'
+import { ColumnMenu } from './ui/ColumnMenu'
 import styles from './DataGrid.module.css'
 
 function DataGridInner<T>(
@@ -31,6 +32,8 @@ function DataGridInner<T>(
     onSelectionChange,
     enableCsvExport,
     csvFilename = 'export.csv',
+    enableColumnResize,
+    enableColumnVisibility,
     toolbarActions,
     emptyState,
     className,
@@ -44,6 +47,17 @@ function DataGridInner<T>(
     [],
   )
   const { state, dispatch } = useGridState(initState)
+
+  // Column menu open state — only one column menu can be open at a time.
+  const [menuOpenForColumn, setMenuOpenForColumn] = useState<string | null>(null)
+
+  const handleToggleMenu = useCallback((columnId: string) => {
+    setMenuOpenForColumn((prev) => prev === columnId ? null : columnId)
+  }, [])
+
+  const handleColumnVisibilityToggle = useCallback((columnId: string, visible: boolean) => {
+    dispatch({ type: 'SET_COLUMN_VISIBILITY', columnId, visible })
+  }, [dispatch])
 
   // Updates or removes a single column's filter; leaves all others intact.
   const handleFilterChange = useCallback((
@@ -252,6 +266,7 @@ function DataGridInner<T>(
               )}
               {visibleColumns.map((col) => {
                 const sortIndex = state.sorts.findIndex((s) => s.columnId === col.id)
+                const isMenuOpen = menuOpenForColumn === col.id
                 return (
                   <HeaderCell
                     key={col.id}
@@ -259,7 +274,23 @@ function DataGridInner<T>(
                     sortEntry={sortIndex >= 0 ? state.sorts[sortIndex] : undefined}
                     sortIndex={sortIndex}
                     totalSorts={state.sorts.length}
+                    width={state.columnSizing[col.id]}
                     onSort={handleSort}
+                    enableResize={enableColumnResize}
+                    onResize={(id, w) => dispatch({ type: 'SET_COLUMN_SIZE', columnId: id, width: w })}
+                    enableMenu={enableColumnVisibility}
+                    menuOpen={isMenuOpen}
+                    onToggleMenu={handleToggleMenu}
+                    columnMenuSlot={
+                      enableColumnVisibility && isMenuOpen ? (
+                        <ColumnMenu
+                          columns={columns}
+                          columnVisibility={state.columnVisibility}
+                          onToggleColumn={handleColumnVisibilityToggle}
+                          onClose={() => setMenuOpenForColumn(null)}
+                        />
+                      ) : null
+                    }
                   />
                 )
               })}
