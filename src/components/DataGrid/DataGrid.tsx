@@ -8,6 +8,7 @@ import { HeaderCell } from './ui/HeaderCell'
 import { FilterControl } from './ui/FilterControl'
 import { GroupRow } from './ui/GroupRow'
 import { Row } from './ui/Row'
+import { SelectionCell } from './ui/SelectionCell'
 import { Pagination } from './ui/Pagination'
 import { Toolbar } from './ui/Toolbar'
 import styles from './DataGrid.module.css'
@@ -25,6 +26,8 @@ function DataGridInner<T>(
     loading,
     onStateChange,
     selectionMode = 'none',
+    selectAllScope = 'page',
+    onSelectionChange,
     emptyState,
     className,
     initialState,
@@ -114,6 +117,56 @@ function DataGridInner<T>(
     [state.selection, data, getRowId],
   )
 
+  // Determine the row IDs available to select-all depending on selectAllScope.
+  // 'page' (default): only the data rows on the current page.
+  // 'filtered': all data rows after filtering (ignores pagination).
+  const selectablePageIds = useMemo<string[]>(() => {
+    if (selectionMode === 'none') return []
+    const dataRowsOnPage = displayRows.flatMap((dr) =>
+      dr._type === 'data' ? [getRowId(dr.row)] : [],
+    )
+    return dataRowsOnPage
+  }, [displayRows, selectionMode, getRowId])
+
+  const selectableFilteredIds = useMemo<string[]>(() => {
+    if (selectionMode === 'none') return []
+    return filteredRows.map(getRowId)
+  }, [filteredRows, selectionMode, getRowId])
+
+  const selectAllIds = selectAllScope === 'filtered' ? selectableFilteredIds : selectablePageIds
+
+  const allPageSelected =
+    selectAllIds.length > 0 && selectAllIds.every((id) => state.selection.has(id))
+  const somePageSelected =
+    !allPageSelected && selectAllIds.some((id) => state.selection.has(id))
+
+  const handleToggleAll = useCallback(() => {
+    if (allPageSelected) {
+      dispatch({ type: 'CLEAR_SELECTION' })
+    } else {
+      dispatch({ type: 'SELECT_ALL', rowIds: selectAllIds })
+    }
+  }, [allPageSelected, selectAllIds, dispatch])
+
+  const handleToggleSelect = useCallback((rowId: string) => {
+    dispatch({ type: 'TOGGLE_SELECT', rowId, mode: selectionMode === 'single' ? 'single' : 'multiple' })
+  }, [selectionMode, dispatch])
+
+  // Fire onSelectionChange whenever selection Set changes.
+  const onSelectionChangeRef = useRef(onSelectionChange)
+  useEffect(() => { onSelectionChangeRef.current = onSelectionChange }, [onSelectionChange])
+
+  const prevSelectionRef = useRef<string>('')
+  useEffect(() => {
+    const serialised = JSON.stringify(Array.from(state.selection).sort())
+    if (serialised === prevSelectionRef.current) return
+    prevSelectionRef.current = serialised
+    if (onSelectionChangeRef.current) {
+      const rows = resolveSelection(state.selection, data, getRowId)
+      onSelectionChangeRef.current(rows, Array.from(state.selection))
+    }
+  }, [state.selection, data, getRowId])
+
   // onStateChange fires only when the query (sorts/filters/grouping/pagination) changes —
   // not when selection, column sizing, or visibility change, as those don't need a refetch.
   // Use a ref for the callback to avoid adding it to the effect dependency array
@@ -166,6 +219,15 @@ function DataGridInner<T>(
         <table className={styles.table} role="grid">
           <thead>
             <tr>
+              {selectionMode !== 'none' && (
+                <SelectionCell
+                  checked={allPageSelected}
+                  indeterminate={somePageSelected}
+                  onChange={handleToggleAll}
+                  ariaLabel={allPageSelected ? 'Deselect all' : 'Select all'}
+                  isHeader
+                />
+              )}
               {visibleColumns.map((col) => {
                 const sortIndex = state.sorts.findIndex((s) => s.columnId === col.id)
                 return (
@@ -182,6 +244,7 @@ function DataGridInner<T>(
             </tr>
             {hasFilterableColumn && (
               <tr className={styles.filterRow}>
+                {selectionMode !== 'none' && <td />}
                 {visibleColumns.map((col) => {
                   const filterEntry = state.filters.find((f) => f.columnId === col.id)
                   return (
@@ -199,7 +262,7 @@ function DataGridInner<T>(
           <tbody>
             {displayRows.length === 0 ? (
               <tr>
-                <td colSpan={visibleColumns.length}>
+                <td colSpan={visibleColumns.length + (selectionMode !== 'none' ? 1 : 0)}>
                   <div className={styles.emptyState}>
                     {emptyState ?? 'No data'}
                   </div>
@@ -218,13 +281,18 @@ function DataGridInner<T>(
                     />
                   )
                 }
+                const rowId = getRowId(displayRow.row)
                 return (
                   <Row
-                    key={getRowId(displayRow.row)}
+                    key={rowId}
                     row={displayRow.row}
                     rowIndex={i}
+                    rowId={rowId}
                     columns={columns}
                     visibleColumnIds={visibleColumnIds}
+                    selectionMode={selectionMode}
+                    isSelected={state.selection.has(rowId)}
+                    onToggleSelect={handleToggleSelect}
                     onRowClick={onRowClick}
                     onCellClick={onCellClick}
                   />

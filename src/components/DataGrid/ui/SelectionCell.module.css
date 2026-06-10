@@ -1,0 +1,15 @@
+.selectionCell {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+  border-right: 1px solid var(--grid-border-colour, #e2e8f0);
+}
+
+.checkbox {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--grid-focus-ring, #3b82f6);
+}
