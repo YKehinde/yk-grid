@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { handleGridAiRequest } from './server/gridAiRoute'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
@@ -12,7 +13,8 @@ export default defineConfig(({ mode }) => {
     {
       name: 'grid-ai-dev',
       configureServer(server) {
-        server.middlewares.use('/api/grid-ai', (req: IncomingMessage, res: ServerResponse) => {
+        server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
+          if (req.url !== '/api/grid-ai') { next(); return }
           if (req.method !== 'POST') {
             res.writeHead(405)
             res.end('Method Not Allowed')
@@ -22,8 +24,6 @@ export default defineConfig(({ mode }) => {
           req.on('data', (chunk: Buffer) => { body += chunk.toString() })
           req.on('end', async () => {
             try {
-              // Dynamic import keeps server code out of the library bundle.
-              const { handleGridAiRequest } = await import('./server/gridAiRoute')
               const result = await handleGridAiRequest(JSON.parse(body))
               res.writeHead(200, { 'Content-Type': 'application/json' })
               res.end(JSON.stringify(result))
@@ -53,5 +53,6 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+  }
   }
 })

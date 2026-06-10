@@ -20,7 +20,12 @@ export async function fetchAiCommand<T>(
     signal,
   })
 
-  if (!res.ok) throw new Error(`AI request failed: ${res.status}`)
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    let detail = body
+    try { detail = JSON.parse(body).error ?? body } catch { /* use raw body */ }
+    throw new Error(detail || `Request failed: ${res.status}`)
+  }
 
   const json = await res.json()
   return AiCommandSchema.parse(json)
