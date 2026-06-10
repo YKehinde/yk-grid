@@ -11,6 +11,7 @@ export interface ColumnDef<T> {
   groupable?: boolean
   aggregation?: 'sum' | 'avg' | 'count' | 'min' | 'max'
   filterType?: 'text' | 'number' | 'select' | 'date'
+  filterOptions?: string[]   // required when filterType='select'
   width?: number
   minWidth?: number
   resizable?: boolean

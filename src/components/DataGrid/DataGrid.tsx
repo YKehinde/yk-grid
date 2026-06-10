@@ -1,10 +1,11 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useCallback } from 'react'
-import { DataGridProps, GridRef, ColumnDef, SortEntry } from './types'
+import { DataGridProps, GridRef, ColumnDef, SortEntry, FilterEntry } from './types'
 import { useGridState, buildInitialState } from './state/useGridState'
 import { processRows } from './state/processRows'
 import { paginateRows, pageCount } from './state/paginate'
 import { resolveSelection } from './state/selection'
 import { HeaderCell } from './ui/HeaderCell'
+import { FilterControl } from './ui/FilterControl'
 import { Row } from './ui/Row'
 import { Pagination } from './ui/Pagination'
 import { Toolbar } from './ui/Toolbar'
@@ -35,6 +36,26 @@ function DataGridInner<T>(
     [],
   )
   const { state, dispatch } = useGridState(initState)
+
+  // Updates or removes a single column's filter; leaves all others intact.
+  const handleFilterChange = useCallback((
+    columnId: string,
+    value: FilterEntry['value'] | null,
+    operator: FilterEntry['operator'],
+  ) => {
+    const isEmpty = value === null || value === '' || (Array.isArray(value) && value.length === 0)
+    let next: FilterEntry[]
+    if (isEmpty) {
+      next = state.filters.filter((f) => f.columnId !== columnId)
+    } else {
+      const entry: FilterEntry = { columnId, operator, value: value as FilterEntry['value'] }
+      const idx = state.filters.findIndex((f) => f.columnId === columnId)
+      next = idx >= 0
+        ? state.filters.map((f, i) => i === idx ? entry : f)
+        : [...state.filters, entry]
+    }
+    dispatch({ type: 'SET_FILTER', filters: next })
+  }, [state.filters, dispatch])
 
   // Cycles: none → asc → desc → none.
   // Shift-click adds to the multi-sort stack rather than replacing.
@@ -107,6 +128,8 @@ function DataGridInner<T>(
 
   const visibleColumns: ColumnDef<T>[] = columns.filter((c) => visibleColumnIds.has(c.id))
 
+  const hasFilterableColumn = visibleColumns.some((c) => c.filterable !== false)
+
   return (
     <div className={[styles.wrapper, className].filter(Boolean).join(' ')}>
       <Toolbar />
@@ -131,6 +154,21 @@ function DataGridInner<T>(
                 )
               })}
             </tr>
+            {hasFilterableColumn && (
+              <tr className={styles.filterRow}>
+                {visibleColumns.map((col) => {
+                  const filterEntry = state.filters.find((f) => f.columnId === col.id)
+                  return (
+                    <FilterControl
+                      key={col.id}
+                      column={col}
+                      value={filterEntry?.value ?? null}
+                      onChange={(value, operator) => handleFilterChange(col.id, value, operator)}
+                    />
+                  )
+                })}
+              </tr>
+            )}
           </thead>
           <tbody>
             {displayRows.length === 0 ? (
