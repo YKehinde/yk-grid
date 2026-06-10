@@ -4,6 +4,7 @@ import { useGridState, buildInitialState } from './state/useGridState'
 import { processRows, filterSourceRows } from './state/processRows'
 import { paginateRows, pageCount } from './state/paginate'
 import { resolveSelection } from './state/selection'
+import { exportCsv, triggerCsvDownload } from './state/exportCsv'
 import { HeaderCell } from './ui/HeaderCell'
 import { FilterControl } from './ui/FilterControl'
 import { GroupRow } from './ui/GroupRow'
@@ -28,6 +29,9 @@ function DataGridInner<T>(
     selectionMode = 'none',
     selectAllScope = 'page',
     onSelectionChange,
+    enableCsvExport,
+    csvFilename = 'export.csv',
+    toolbarActions,
     emptyState,
     className,
     initialState,
@@ -188,12 +192,20 @@ function DataGridInner<T>(
     onStateChangeRef.current?.(state)
   }, [state, dataMode])
 
+  const handleExport = useCallback((opts?: { selectedOnly?: boolean }) => {
+    const rowsToExport = opts?.selectedOnly
+      ? resolveSelection(state.selection, data, getRowId)
+      : filteredRows
+    const csv = exportCsv(rowsToExport, columns)
+    triggerCsvDownload(csv, csvFilename)
+  }, [state.selection, data, getRowId, filteredRows, columns, csvFilename])
+
   useImperativeHandle(ref, () => ({
     getSelectedRows: () => resolveSelection(state.selection, data, getRowId),
     getProcessedRows: () => filteredRows,
     getGridState: () => state,
     clearSelection: () => dispatch({ type: 'CLEAR_SELECTION' }),
-    exportCsv: () => { /* phase 7 */ },
+    exportCsv: handleExport,
     setState: (partial) => {
       if (partial.sorts) dispatch({ type: 'SET_SORT', sorts: partial.sorts })
       if (partial.filters) dispatch({ type: 'SET_FILTER', filters: partial.filters })
@@ -207,7 +219,17 @@ function DataGridInner<T>(
 
   return (
     <div className={[styles.wrapper, className].filter(Boolean).join(' ')}>
-      <Toolbar />
+      <Toolbar
+        selectedRows={selectedRows}
+        selectedIds={Array.from(state.selection)}
+        processedRows={filteredRows}
+        gridState={state}
+        clearSelection={() => dispatch({ type: 'CLEAR_SELECTION' })}
+        enableCsvExport={enableCsvExport}
+        onExport={() => handleExport()}
+        toolbarActions={toolbarActions}
+        columns={columns}
+      />
 
       <div className={styles.tableContainer}>
         {loading && (
@@ -312,12 +334,6 @@ function DataGridInner<T>(
         onPageSizeChange={(size) => dispatch({ type: 'SET_PAGE_SIZE', pageSize: size })}
       />
 
-      {/* Expose selectedRows count for future toolbar — phase 7 */}
-      {selectionMode !== 'none' && selectedRows.length > 0 && (
-        <div aria-live="polite" aria-atomic="true" className="sr-only">
-          {selectedRows.length} row{selectedRows.length !== 1 ? 's' : ''} selected
-        </div>
-      )}
     </div>
   )
 }
