@@ -330,6 +330,14 @@ function DataGridInner<T>(
     }
     return widths
   }, [visibleColumns, selectionMode, state.columnSizing])
+  const tableMinWidth = useMemo(
+    () => colWidths.reduce((total, width) => total + width, 0),
+    [colWidths],
+  )
+  const tableStyle = useMemo<React.CSSProperties>(
+    () => ({ minWidth: tableMinWidth }),
+    [tableMinWidth],
+  )
 
   // Last column gets no explicit width so it fills remaining container space when
   // columns are narrower than the viewport. All other columns keep their exact widths.
@@ -531,16 +539,16 @@ function DataGridInner<T>(
       {virtualScrollEnabled ? (
         // Two-table layout: header is outside the scroll container so it stays sticky.
         <div className={styles.vsOuter}>
-          <table className={styles.table} role="presentation" aria-hidden>
+          <table className={styles.table} role="presentation" aria-hidden style={tableStyle}>
             {colgroup}
             <thead>{headerRow}</thead>
           </table>
           <div
             ref={scrollContainerRef}
             className={styles.vsBody}
-            style={{ height: resolvedHeight, overflowY: 'auto', overflowX: 'clip' }}
+            style={{ height: resolvedHeight, overflowY: 'auto', overflowX: 'clip', minWidth: tableMinWidth }}
           >
-            <table className={styles.table} role="grid">
+            <table className={styles.table} role="grid" style={tableStyle}>
               {colgroup}
               <tbody>{renderBodyRows()}</tbody>
             </table>
@@ -548,7 +556,7 @@ function DataGridInner<T>(
         </div>
       ) : (
         <div className={styles.tableContainer}>
-          <table className={styles.table} role="grid">
+          <table className={styles.table} role="grid" style={tableStyle}>
             {colgroup}
             <thead>{headerRow}</thead>
             <tbody>{renderBodyRows()}</tbody>

@@ -43,6 +43,31 @@ describe('DataGrid — virtual scrolling', () => {
     expect(scrollDiv).not.toBeNull()
   })
 
+  it('keeps virtual header and body at the same horizontal width', () => {
+    const wideColumns: ColumnDef<Row>[] = [
+      { id: 'name', header: 'Name', accessor: (r) => r.name, width: 320 },
+      { id: 'copy', header: 'Copy', accessor: (r) => r.name, width: 280 },
+    ]
+
+    const { container } = render(
+      <DataGrid<Row>
+        data={makeRows(100)}
+        columns={wideColumns}
+        getRowId={(r) => r.id}
+        dataMode="client"
+        height={300}
+        pageSize={100}
+      />,
+    )
+
+    const tables = container.querySelectorAll('table')
+    const scrollDiv = container.querySelector('[style*="overflow-y"]') as HTMLDivElement
+
+    expect(tables[0].style.minWidth).toBe('600px')
+    expect(tables[1].style.minWidth).toBe('600px')
+    expect(scrollDiv.style.minWidth).toBe('600px')
+  })
+
   it('renders a single table (no virtual scroll) when height is not set', () => {
     const { container } = render(
       <DataGrid<Row>
