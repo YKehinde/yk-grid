@@ -49,12 +49,13 @@ export default defineConfig(({ mode }) => {
       fileName: (format) => `yk-grid.${format}.js`,
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'zod'],
+      external: ['react', 'react-dom', 'zod', '@tanstack/react-virtual'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
           zod: 'Zod',
+          '@tanstack/react-virtual': 'TanStackReactVirtual',
         },
       },
     },
