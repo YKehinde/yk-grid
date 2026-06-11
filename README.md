@@ -37,11 +37,18 @@ Peer dependencies:
 npm install react react-dom zod
 ```
 
+Import the library stylesheet once in your app entry point:
+
+```tsx
+import 'yk-grid/dist/yk-grid.css'
+```
+
 ---
 
 ## Quick start
 
 ```tsx
+import 'yk-grid/dist/yk-grid.css'
 import { DataGrid } from 'yk-grid'
 import type { ColumnDef } from 'yk-grid'
 
