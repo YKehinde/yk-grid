@@ -4,12 +4,14 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/')
 })
 
+function header(page: import('@playwright/test').Page, name: string) {
+  return page.getByRole('columnheader', { name: new RegExp(name, 'i') })
+}
+
 test.describe('sorting', () => {
   test('clicking a column header sorts rows ascending then descending', async ({ page }) => {
-    const amountHeader = page.getByRole('columnheader', { name: /amount/i })
+    const amountHeader = header(page, 'amount')
     await amountHeader.click()
-    // After first click: ascending — smallest amount should come first.
-    const firstCell = page.locator('tbody tr').first().locator('td').nth(8) // amount is 9th visible col
     await expect(amountHeader).toHaveAttribute('aria-sort', 'ascending')
 
     await amountHeader.click()
@@ -19,13 +21,13 @@ test.describe('sorting', () => {
 
 test.describe('filtering', () => {
   test('funnel button opens the filter panel', async ({ page }) => {
-    const filterBtn = page.getByRole('button', { name: 'Filter Partner' })
+    const filterBtn = header(page, 'partner').getByRole('button', { name: 'Filter Partner' })
     await filterBtn.click()
     await expect(page.getByRole('dialog', { name: 'Filter Partner' })).toBeVisible()
   })
 
   test('typing in the text filter panel reduces visible rows', async ({ page }) => {
-    const filterBtn = page.getByRole('button', { name: 'Filter Partner' })
+    const filterBtn = header(page, 'partner').getByRole('button', { name: 'Filter Partner' })
     await filterBtn.click()
     const input = page.getByRole('dialog').getByRole('textbox')
     const rowsBefore = await page.locator('tbody tr').count()
@@ -36,7 +38,7 @@ test.describe('filtering', () => {
   })
 
   test('closing filter panel clears the panel but keeps the filter active', async ({ page }) => {
-    const filterBtn = page.getByRole('button', { name: 'Filter Status' })
+    const filterBtn = header(page, 'status').getByRole('button', { name: 'Filter Status' })
     await filterBtn.click()
     // Select one status option
     const firstCheckbox = page.getByRole('dialog').getByRole('checkbox').nth(1)
@@ -65,42 +67,42 @@ test.describe('pagination', () => {
 
 test.describe('selection', () => {
   test('checking a row checkbox selects it', async ({ page }) => {
-    const firstRowCheckbox = page.locator('tbody tr').first().getByRole('checkbox')
+    const firstRowCheckbox = page.getByRole('row', { name: /TXN-001/ }).getByRole('checkbox', { name: 'Select row' })
     await firstRowCheckbox.check()
-    await expect(page.getByText(/1 selected/)).toBeVisible()
+    await expect(page.getByText('1 row selected')).toBeVisible()
   })
 
   test('select-all checkbox selects all rows on the current page', async ({ page }) => {
     await page.getByRole('checkbox', { name: /Select all/i }).check()
-    await expect(page.getByText(/selected/)).toBeVisible()
+    await expect(page.getByText('50 rows selected')).toBeVisible()
   })
 })
 
 test.describe('column visibility', () => {
   test('column options button opens the visibility panel', async ({ page }) => {
-    const menuBtn = page.locator('th').first().getByRole('button', { name: /Column options/ })
+    const menuBtn = header(page, 'id').getByRole('button', { name: 'Column options for ID' })
     await menuBtn.click()
     await expect(page.getByRole('dialog', { name: 'Column visibility' })).toBeVisible()
   })
 
   test('unchecking a column hides it from the table', async ({ page }) => {
-    const menuBtn = page.locator('th', { hasText: 'ID' }).getByRole('button', { name: /Column options/ })
+    const menuBtn = header(page, 'id').getByRole('button', { name: 'Column options for ID' })
     await menuBtn.click()
     const idCheckbox = page.getByRole('dialog').getByLabel('ID')
-    await idCheckbox.uncheck()
-    await expect(page.locator('th', { hasText: 'ID' })).toHaveCount(0)
+    await idCheckbox.click()
+    await expect(header(page, 'id')).toHaveCount(0)
   })
 })
 
 test.describe('inline editing', () => {
   test('double-clicking an editable cell shows an input', async ({ page }) => {
-    const partnerCell = page.locator('tbody tr').first().locator('td').nth(2) // partner col
+    const partnerCell = page.getByRole('row', { name: /TXN-001/ }).getByRole('gridcell', { name: 'Tesco' })
     await partnerCell.dblclick()
     await expect(page.getByRole('textbox', { name: 'Edit Partner' })).toBeVisible()
   })
 
   test('pressing Escape cancels the edit without changing the value', async ({ page }) => {
-    const partnerCell = page.locator('tbody tr').first().locator('td').nth(2)
+    const partnerCell = page.getByRole('row', { name: /TXN-001/ }).getByRole('gridcell', { name: 'Tesco' })
     const originalText = await partnerCell.textContent()
     await partnerCell.dblclick()
     const input = page.getByRole('textbox', { name: 'Edit Partner' })
