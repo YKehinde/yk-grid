@@ -92,7 +92,7 @@ const columns: ColumnDef<Transaction>[] = [
   },
   {
     id: 'currency',
-    header: 'CCY',
+    header: 'Currency',
     accessor: (r) => r.currency,
     sortable: true,
     filterable: true,
