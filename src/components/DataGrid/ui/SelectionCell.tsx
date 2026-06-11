@@ -21,7 +21,7 @@ export function SelectionCell({ checked, indeterminate, onChange, ariaLabel, isH
   const Tag = isHeader ? 'th' : 'td'
 
   return (
-    <Tag className={styles.selectionCell} role="gridcell">
+    <Tag className={styles.selectionCell} role={isHeader ? 'columnheader' : 'gridcell'}>
       <input
         ref={inputRef}
         type="checkbox"

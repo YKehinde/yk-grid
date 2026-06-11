@@ -539,7 +539,7 @@ function DataGridInner<T>(
       {virtualScrollEnabled ? (
         // Two-table layout: header is outside the scroll container so it stays sticky.
         <div className={styles.vsOuter}>
-          <table className={styles.table} role="presentation" aria-hidden style={tableStyle}>
+          <table className={styles.table} style={tableStyle}>
             {colgroup}
             <thead>{headerRow}</thead>
           </table>
