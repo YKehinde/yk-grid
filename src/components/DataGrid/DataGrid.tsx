@@ -157,7 +157,7 @@ function DataGridInner<T>(
 
   useEffect(() => {
     if (!fetchFilterOptions) return
-    const selectCols = columns.filter((c) => c.filterType === 'select' && !c.filterOptions)
+    const selectCols = columns.filter((c) => c.filterable === true && c.filterType === 'select' && !c.filterOptions)
     for (const col of selectCols) {
       fetchFilterOptions(col.id).then((opts) => {
         setFetchedFilterOptions((prev) => ({ ...prev, [col.id]: opts }))
@@ -335,9 +335,16 @@ function DataGridInner<T>(
   // columns are narrower than the viewport. All other columns keep their exact widths.
   const colgroup = (
     <colgroup>
-      {colWidths.map((w, i) => (
-        <col key={i} style={i < colWidths.length - 1 ? { width: w } : undefined} />
-      ))}
+      {selectionMode !== 'none' && (
+        <col style={{ width: 40, minWidth: 40, maxWidth: 40 }} />
+      )}
+      {visibleColumns.map((col, i) => {
+        const width = state.columnSizing[col.id] ?? col.width ?? 150
+        const isLastColumn = i === visibleColumns.length - 1
+        return (
+          <col key={col.id} style={isLastColumn ? undefined : { width }} />
+        )
+      })}
     </colgroup>
   )
 
@@ -373,7 +380,7 @@ function DataGridInner<T>(
             onToggleMenu={handleToggleMenu}
             filterActive={filterActive}
             filterPanelOpen={filterPanelOpen}
-            onToggleFilter={col.filterable !== false ? handleToggleFilter : undefined}
+            onToggleFilter={col.filterable === true ? handleToggleFilter : undefined}
             columnMenuSlot={
               enableColumnVisibility && isMenuOpen && menuAnchorRect ? (
                 <ColumnMenu
@@ -542,6 +549,7 @@ function DataGridInner<T>(
       ) : (
         <div className={styles.tableContainer}>
           <table className={styles.table} role="grid">
+            {colgroup}
             <thead>{headerRow}</thead>
             <tbody>{renderBodyRows()}</tbody>
           </table>
