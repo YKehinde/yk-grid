@@ -1,0 +1,2 @@
+export { handleGridAiRequest } from './gridAiRoute'
+
