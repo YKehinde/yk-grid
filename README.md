@@ -314,15 +314,24 @@ Wire up the server handler (Express or Next.js App Router):
 
 ```ts
 // Express
-import { gridAiRoute } from 'yk-grid/server'
-app.post('/api/grid-ai', gridAiRoute({ provider: 'anthropic' }))
+import { handleGridAiRequest } from 'yk-grid/server'
+
+app.post('/api/grid-ai', async (req, res) => {
+  const result = await handleGridAiRequest(req.body)
+  res.json(result)
+})
 
 // Next.js App Router
-import { gridAiRoute } from 'yk-grid/server'
-export const POST = gridAiRoute({ provider: 'anthropic' })
+import { handleGridAiRequest } from 'yk-grid/server'
+
+export async function POST(req: Request) {
+  const body = await req.json()
+  const result = await handleGridAiRequest(body)
+  return Response.json(result)
+}
 ```
 
-Set `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) in your environment. See `server/gridAiRoute.ts` for the full provider options.
+Set `ANTHROPIC_API_KEY` in your environment. To use OpenAI instead, set `LLM_PROVIDER=openai` and `OPENAI_API_KEY`.
 
 ---
 

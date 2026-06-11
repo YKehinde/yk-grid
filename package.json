@@ -1,6 +1,23 @@
 {
   "name": "yk-grid",
   "version": "1.0.0",
+  "description": "Production-ready AI-assisted React DataGrid component with sorting, filtering, grouping, pagination, virtual scrolling, and optional natural-language query input",
+  "keywords": [
+    "react",
+    "datagrid",
+    "data-grid",
+    "table",
+    "grid",
+    "sorting",
+    "filtering",
+    "pagination",
+    "virtual-scroll",
+    "typescript",
+    "ai",
+    "natural-language"
+  ],
+  "author": "Yemi Kehinde",
+  "license": "MIT",
   "main": "dist/yk-grid.umd.js",
   "module": "dist/yk-grid.es.js",
   "types": "dist/types/index.d.ts",
@@ -20,28 +37,38 @@
     "./dist/yk-grid.css": "./dist/yk-grid.css",
     "./package.json": "./package.json"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "dist/yk-grid.css"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vite",
     "dev:example": "vite example --config vite.config.ts",
     "build": "tsc --noEmit && vite build && vite build --config vite.server.config.ts && tsc --project tsconfig.build.json && tsc --project tsconfig.server.json",
+    "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lint": "tsc --noEmit"
   },
-  "keywords": [],
-  "author": "Yemi Kehinde",
-  "license": "MIT",
-  "description": "Production-ready AI-assisted React DataGrid component",
   "dependencies": {
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "zod": "^4.4.3"
+    "@tanstack/react-virtual": "^3.14.2"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "zod": ">=3"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "@tanstack/react-virtual": "^3.14.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -50,11 +77,11 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "jsdom": "^27.0.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
-    "vitest": "^3.2.6"
-  },
-  "peerDependencies": {
-    "@tanstack/react-virtual": "^3.14.2"
+    "vitest": "^3.2.6",
+    "zod": "^4.4.3"
   }
 }
