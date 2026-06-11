@@ -1,0 +1,42 @@
+.td {
+  /* Inherits padding and border from DataGrid.module.css table rules. */
+}
+
+.editable {
+  cursor: cell;
+}
+
+.editable:hover {
+  background: color-mix(in srgb, var(--grid-accent, #6366f1) 6%, transparent);
+}
+
+.editInput {
+  display: block;
+  width: 100%;
+  /* Negative margin pulls the input to fill the cell padding so there's no
+     visible gap between the input and the cell border. */
+  margin: calc(-1 * var(--grid-cell-padding-y, 0.625rem)) calc(-1 * var(--grid-cell-padding-x, 0.875rem));
+  padding: var(--grid-cell-padding-y, 0.625rem) var(--grid-cell-padding-x, 0.875rem);
+  width: calc(100% + 2 * var(--grid-cell-padding-x, 0.875rem));
+  height: calc(100% + 2 * var(--grid-cell-padding-y, 0.625rem));
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+  background: #ffffff;
+  border: 2px solid var(--grid-accent, #6366f1);
+  border-radius: 2px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.editInput[type='number'] {
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.editInput[type='number']::-webkit-inner-spin-button,
+.editInput[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

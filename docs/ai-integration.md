@@ -185,3 +185,12 @@ The LLM is instructed to return raw JSON only (no markdown fences, no prose outs
 - Clicking **Clear** (or the × icon) dispatches `RESET`, which clears all sorts, filters, and grouping and removes the explanation text.
 - If the fetch fails, no state changes are applied and the error is surfaced in the UI.
 - The input is disabled while a request is in-flight.
+
+## AI questions
+### Why is endpoint needed in the component props (if I want to use ai)
+What's "built in" is the handler (`handleGridAiRequest`), not the route. The library ships the logic, but it deliberately does not — and cannot — own the URL. The consumer decides where to mount it: `/api/grid-ai`, `/api/v2/grid/ai`, a different origin entirely, a Lambda URL, whatever their backend topology dictates. So the client genuinely needs to be told where to POST, and that's exactly what `endpoint` is.
+The mental separation that resolves your discomfort:
+
+* `endpoint` is transport config, not AI config. It answers "where do I send the request," not "which AI runs." The provider choice lives entirely server-side (env var or injected `LlmProvider`). The prop isn't leaking the AI implementation into the client — the client stays completely provider-agnostic, which is the property you actually want.
+* The handler is reusable; the URL is per-app. Two apps using your library will share the identical handler but mount it at different paths. A prop is the right place for something that varies per consumer.
+
