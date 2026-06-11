@@ -105,43 +105,45 @@ export function HeaderCell<T>({
       role={sortable ? 'columnheader' : undefined}
       className={[styles.th, sortable && styles.sortable].filter(Boolean).join(' ')}
     >
-      <span className={styles.label}>{column.header}</span>
-      {sortable && (
-        <span className={styles.indicators} aria-hidden="true">
-          {direction === 'asc' && <span className={styles.arrow}>↑</span>}
-          {direction === 'desc' && <span className={styles.arrow}>↓</span>}
-          {!direction && <span className={styles.arrowIdle}>↕</span>}
-          {totalSorts > 1 && sortIndex >= 0 && (
-            <span className={styles.sortIndex}>{sortIndex + 1}</span>
+      <span className={styles.content}>
+        <span className={styles.label}>{column.header}</span>
+        {sortable && (
+          <span className={styles.indicators} aria-hidden="true">
+            {direction === 'asc' && <span className={styles.arrow}>↑</span>}
+            {direction === 'desc' && <span className={styles.arrow}>↓</span>}
+            {!direction && <span className={styles.arrowIdle}>↕</span>}
+            {totalSorts > 1 && sortIndex >= 0 && (
+              <span className={styles.sortIndex}>{sortIndex + 1}</span>
+            )}
+          </span>
+        )}
+        <span className={[styles.headerActions, onToggleFilter && styles.headerActionsVisible].filter(Boolean).join(' ')}>
+          {onToggleFilter && (
+            <button
+              type="button"
+              className={[styles.filterBtn, (filterActive || filterPanelOpen) && styles.filterBtnActive].filter(Boolean).join(' ')}
+              onClick={(e) => { e.stopPropagation(); onToggleFilter(column.id, e.currentTarget.getBoundingClientRect()) }}
+              aria-label={`Filter ${column.header}`}
+              aria-haspopup="dialog"
+              aria-expanded={filterPanelOpen}
+              tabIndex={-1}
+            >
+              <FunnelIcon filled={filterActive} />
+            </button>
+          )}
+          {enableMenu && column.hideable !== false && (
+            <button
+              type="button"
+              className={[styles.menuBtn, menuOpen && styles.menuBtnOpen].filter(Boolean).join(' ')}
+              onClick={(e) => { e.stopPropagation(); onToggleMenu?.(column.id, e.currentTarget.getBoundingClientRect()) }}
+              aria-label={`Column options for ${column.header}`}
+              aria-expanded={menuOpen}
+              tabIndex={-1}
+            >
+              ⋮
+            </button>
           )}
         </span>
-      )}
-      <span className={styles.headerActions}>
-        {onToggleFilter && (
-          <button
-            type="button"
-            className={[styles.filterBtn, (filterActive || filterPanelOpen) && styles.filterBtnActive].filter(Boolean).join(' ')}
-            onClick={(e) => { e.stopPropagation(); onToggleFilter(column.id, e.currentTarget.getBoundingClientRect()) }}
-            aria-label={`Filter ${column.header}`}
-            aria-haspopup="dialog"
-            aria-expanded={filterPanelOpen}
-            tabIndex={-1}
-          >
-            <FunnelIcon filled={filterActive} />
-          </button>
-        )}
-        {enableMenu && column.hideable !== false && (
-          <button
-            type="button"
-            className={[styles.menuBtn, menuOpen && styles.menuBtnOpen].filter(Boolean).join(' ')}
-            onClick={(e) => { e.stopPropagation(); onToggleMenu?.(column.id, e.currentTarget.getBoundingClientRect()) }}
-            aria-label={`Column options for ${column.header}`}
-            aria-expanded={menuOpen}
-            tabIndex={-1}
-          >
-            ⋮
-          </button>
-        )}
       </span>
       {resizable && (
         <span
