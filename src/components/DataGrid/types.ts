@@ -71,13 +71,7 @@ export interface DataGridProps<T> {
   enableColumnResize?: boolean
   enableColumnVisibility?: boolean
 
-  toolbarActions?: (ctx: {
-    selectedRows: T[]
-    selectedIds: string[]
-    processedRows: T[]
-    gridState: GridState
-    clearSelection: () => void
-  }) => React.ReactNode
+  toolbarActions?: (ctx: ToolbarCtx<T>) => React.ReactNode
 
   fetchFilterOptions?: (columnId: string) => Promise<string[]>
 
@@ -111,6 +105,14 @@ export interface DataDisplayRow<T> {
 }
 
 export type DisplayRow<T> = GroupHeaderRow | DataDisplayRow<T>
+
+export interface ToolbarCtx<T> {
+  selectedRows: T[]
+  selectedIds: string[]
+  processedRows: T[]
+  gridState: GridState
+  clearSelection: () => void
+}
 
 export interface GridRef<T> {
   getSelectedRows: () => T[]

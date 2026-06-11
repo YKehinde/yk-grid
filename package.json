@@ -1,6 +1,23 @@
 {
   "name": "yk-grid",
   "version": "1.0.0",
+  "description": "Production-ready AI-assisted React DataGrid component with sorting, filtering, grouping, pagination, virtual scrolling, and optional natural-language query input",
+  "keywords": [
+    "react",
+    "datagrid",
+    "data-grid",
+    "table",
+    "grid",
+    "sorting",
+    "filtering",
+    "pagination",
+    "virtual-scroll",
+    "typescript",
+    "ai",
+    "natural-language"
+  ],
+  "author": "Yemi Kehinde",
+  "license": "MIT",
   "main": "dist/yk-grid.umd.js",
   "module": "dist/yk-grid.es.js",
   "types": "dist/types/index.d.ts",
@@ -11,28 +28,42 @@
       "require": "./dist/yk-grid.umd.js",
       "default": "./dist/yk-grid.es.js"
     },
+    "./server": {
+      "types": "./dist/server/gridAiRoute.d.ts",
+      "default": "./dist/server/gridAiRoute.js"
+    },
     "./dist/yk-grid.css": "./dist/yk-grid.css",
     "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "dist/yk-grid.css"
+  ],
+  "engines": {
+    "node": ">=18"
   },
   "scripts": {
     "dev": "vite",
     "dev:example": "vite example --config vite.config.ts",
-    "build": "tsc --noEmit && vite build && tsc --project tsconfig.build.json",
+    "build": "tsc --noEmit && vite build && tsc --project tsconfig.build.json && tsc --project tsconfig.server.json",
+    "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lint": "tsc --noEmit"
   },
-  "keywords": [],
-  "author": "Yemi Kehinde",
-  "license": "MIT",
-  "description": "Production-ready AI-assisted React DataGrid component",
   "dependencies": {
-    "@tanstack/react-virtual": "^3.14.2",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "zod": "^4.4.3"
+    "@tanstack/react-virtual": "^3.14.2"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "zod": ">=3"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

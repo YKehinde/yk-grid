@@ -10,4 +10,5 @@ export type {
   DisplayRow,
   GroupHeaderRow,
   DataDisplayRow,
+  ToolbarCtx,
 } from './types'
