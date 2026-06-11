@@ -14,6 +14,10 @@ interface Props<T> {
   onToggleSelect?: (rowId: string) => void
   onRowClick?: (row: T, index: number, e: React.MouseEvent) => void
   onCellClick?: (value: unknown, row: T, column: ColumnDef<T>, e: React.MouseEvent) => void
+  editingColumnId?: string
+  onStartEdit?: (rowId: string, columnId: string) => void
+  onCommitEdit?: (newValue: string | number, row: T, column: ColumnDef<T>) => void
+  onCancelEdit?: () => void
 }
 
 export function Row<T>({
@@ -27,11 +31,24 @@ export function Row<T>({
   onToggleSelect,
   onRowClick,
   onCellClick,
+  editingColumnId,
+  onStartEdit,
+  onCommitEdit,
+  onCancelEdit,
 }: Props<T>) {
   const interactive = !!onRowClick
+  const isEditingAnyCell = editingColumnId !== undefined
+
+  const handleClick = interactive
+    ? (e: React.MouseEvent) => {
+        if (isEditingAnyCell) return
+        onRowClick!(row, rowIndex, e)
+      }
+    : undefined
 
   const handleKeyDown = interactive
     ? (e: React.KeyboardEvent) => {
+        if (isEditingAnyCell) return
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           onRowClick!(row, rowIndex, e as unknown as React.MouseEvent)
@@ -42,7 +59,7 @@ export function Row<T>({
   return (
     <tr
       aria-selected={selectionMode !== 'none' ? isSelected : undefined}
-      onClick={interactive ? (e) => onRowClick!(row, rowIndex, e) : undefined}
+      onClick={handleClick}
       onKeyDown={handleKeyDown}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
@@ -63,6 +80,10 @@ export function Row<T>({
             column={col}
             row={row}
             onCellClick={onCellClick}
+            isEditing={editingColumnId === col.id}
+            onStartEdit={onStartEdit ? () => onStartEdit(rowId, col.id) : undefined}
+            onCommitEdit={onCommitEdit}
+            onCancelEdit={onCancelEdit}
           />
         ))}
     </tr>

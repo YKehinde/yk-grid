@@ -51,6 +51,7 @@ const columns: ColumnDef<Transaction>[] = [
     sortable: true,
     filterable: true,
     filterType: 'text',
+    editable: true,
   },
   {
     id: 'country',
@@ -105,6 +106,7 @@ const columns: ColumnDef<Transaction>[] = [
     sortable: true,
     filterType: 'number',
     aggregation: 'sum',
+    editable: true,
     cell: (_, row) =>
       new Intl.NumberFormat('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(row.amount),
     width: 110,
@@ -146,7 +148,12 @@ export default function App() {
         columns={columns}
         getRowId={(r) => r.id}
         dataMode="client"
-        pageSize={15}
+        pageSize={50}
+        height={600}
+        selectionMode="multiple"
+        enableColumnResize
+        enableColumnVisibility
+        onCellEdit={(value, row, col) => console.log('edit', col.id, row.id, '→', value)}
         ai={{ endpoint: '/api/grid-ai', placeholder: 'e.g. "show failed refunds over £200, sorted by amount"' }}
       />
     </div>

@@ -17,6 +17,7 @@ export interface ColumnDef<T> {
   resizable?: boolean
   hideable?: boolean
   defaultHidden?: boolean
+  editable?: boolean
 }
 
 export interface SortEntry {
@@ -81,6 +82,10 @@ export interface DataGridProps<T> {
   fetchFilterOptions?: (columnId: string) => Promise<string[]>
 
   ai?: { endpoint: string; placeholder?: string }
+
+  height?: number | string
+  estimatedRowHeight?: number
+  onCellEdit?: (newValue: string | number, row: T, column: ColumnDef<T>) => void
 
   initialState?: Partial<GridState>
   emptyState?: React.ReactNode

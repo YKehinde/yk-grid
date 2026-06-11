@@ -4,28 +4,48 @@
   white-space: nowrap;
 }
 
-.menuBtn {
+.headerActions {
   position: absolute;
   top: 50%;
   right: 20px;
   transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+}
+
+.th:hover .headerActions,
+.th:has(.filterBtnActive) .headerActions,
+.th:has(.menuBtnOpen) .headerActions {
+  opacity: 1;
+}
+
+.filterBtn,
+.menuBtn {
   background: none;
   border: none;
   cursor: pointer;
   padding: 2px 4px;
-  opacity: 0;
   font-size: 1rem;
   line-height: 1;
   border-radius: 2px;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
 }
 
-.th:hover .menuBtn,
-.menuBtnOpen {
-  opacity: 1 !important;
+.filterBtnActive {
+  color: var(--grid-accent, #6366f1);
 }
 
+.filterBtn:focus-visible,
 .menuBtn:focus-visible {
   outline: 2px solid var(--grid-accent, #6366f1);
+}
+
+.menuBtnOpen {
+  opacity: 1;
 }
 
 .resizeHandle {

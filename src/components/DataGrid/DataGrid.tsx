@@ -1,4 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useCallback, useRef, useEffect, useState } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { DataGridProps, GridRef, ColumnDef, SortEntry, FilterEntry, DisplayRow } from './types'
 import { useGridState, buildInitialState } from './state/useGridState'
 import { processRows, filterSourceRows } from './state/processRows'
@@ -8,7 +9,7 @@ import { exportCsv, triggerCsvDownload } from './state/exportCsv'
 import { applyCommand } from './ai/applyCommand'
 import { AiCommand } from './ai/schema'
 import { HeaderCell } from './ui/HeaderCell'
-import { FilterControl } from './ui/FilterControl'
+import { FilterPanel } from './ui/FilterPanel'
 import { GroupRow } from './ui/GroupRow'
 import { Row } from './ui/Row'
 import { SelectionCell } from './ui/SelectionCell'
@@ -43,6 +44,9 @@ function DataGridInner<T>(
     initialState,
     fetchFilterOptions,
     ai,
+    height,
+    estimatedRowHeight = 41,
+    onCellEdit,
   }: DataGridProps<T>,
   ref: React.ForwardedRef<GridRef<T>>,
 ) {
@@ -53,9 +57,21 @@ function DataGridInner<T>(
   )
   const { state, dispatch } = useGridState(initState)
 
+  // Filter panel state — only one panel open at a time.
+  const [filterPanelColumn, setFilterPanelColumn] = useState<string | null>(null)
+  const [filterPanelAnchorRect, setFilterPanelAnchorRect] = useState<DOMRect | null>(null)
+
   // Column menu open state — only one column menu can be open at a time.
   const [menuOpenForColumn, setMenuOpenForColumn] = useState<string | null>(null)
   const [menuAnchorRect, setMenuAnchorRect] = useState<DOMRect | null>(null)
+
+  const handleToggleFilter = useCallback((columnId: string, anchorRect: DOMRect) => {
+    setFilterPanelColumn((prev) => {
+      if (prev === columnId) { setFilterPanelAnchorRect(null); return null }
+      setFilterPanelAnchorRect(anchorRect)
+      return columnId
+    })
+  }, [])
 
   const handleToggleMenu = useCallback((columnId: string, anchorRect: DOMRect) => {
     setMenuOpenForColumn((prev) => {
@@ -229,8 +245,6 @@ function DataGridInner<T>(
 
   // onStateChange fires only when the query (sorts/filters/grouping/pagination) changes —
   // not when selection, column sizing, or visibility change, as those don't need a refetch.
-  // Use a ref for the callback to avoid adding it to the effect dependency array
-  // (consumers often pass an inline function and we don't want to re-fire on every render).
   const onStateChangeRef = useRef(onStateChange)
   useEffect(() => { onStateChangeRef.current = onStateChange }, [onStateChange])
 
@@ -263,6 +277,22 @@ function DataGridInner<T>(
     actions.forEach((action) => dispatch(action))
   }, [knownColumnIds, dispatch])
 
+  // Inline cell editing state.
+  const [editingCell, setEditingCell] = useState<{ rowId: string; columnId: string } | null>(null)
+
+  const handleStartEdit = useCallback((rowId: string, columnId: string) => {
+    setEditingCell({ rowId, columnId })
+  }, [])
+
+  const handleCommitEdit = useCallback((newValue: string | number, row: T, column: ColumnDef<T>) => {
+    onCellEdit?.(newValue, row, column)
+    setEditingCell(null)
+  }, [onCellEdit])
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingCell(null)
+  }, [])
+
   useImperativeHandle(ref, () => ({
     getSelectedRows: () => resolveSelection(state.selection, data, getRowId),
     getProcessedRows: () => filteredRows,
@@ -278,7 +308,183 @@ function DataGridInner<T>(
 
   const visibleColumns: ColumnDef<T>[] = columns.filter((c) => visibleColumnIds.has(c.id))
 
-  const hasFilterableColumn = visibleColumns.some((c) => c.filterable !== false)
+  // Virtual scroll — enabled only when a fixed height is provided.
+  const virtualScrollEnabled = height !== undefined
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: virtualScrollEnabled ? displayRows.length : 0,
+    getScrollElement: () => (virtualScrollEnabled ? scrollContainerRef.current : null),
+    estimateSize: () => estimatedRowHeight,
+    overscan: 8,
+  })
+
+  const virtualItems = virtualizer.getVirtualItems()
+
+  // Column widths for colgroup — keeps header and body tables in sync.
+  const colWidths = useMemo(() => {
+    const widths: number[] = []
+    if (selectionMode !== 'none') widths.push(40)
+    for (const col of visibleColumns) {
+      widths.push(state.columnSizing[col.id] ?? col.width ?? 150)
+    }
+    return widths
+  }, [visibleColumns, selectionMode, state.columnSizing])
+
+  const colgroup = (
+    <colgroup>
+      {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
+    </colgroup>
+  )
+
+  const headerRow = (
+    <tr>
+      {selectionMode !== 'none' && (
+        <SelectionCell
+          checked={allPageSelected}
+          indeterminate={somePageSelected}
+          onChange={handleToggleAll}
+          ariaLabel={allPageSelected ? 'Deselect all' : 'Select all'}
+          isHeader
+        />
+      )}
+      {visibleColumns.map((col) => {
+        const sortIndex = state.sorts.findIndex((s) => s.columnId === col.id)
+        const isMenuOpen = menuOpenForColumn === col.id
+        const filterActive = state.filters.some((f) => f.columnId === col.id)
+        const filterPanelOpen = filterPanelColumn === col.id
+        return (
+          <HeaderCell
+            key={col.id}
+            column={col}
+            sortEntry={sortIndex >= 0 ? state.sorts[sortIndex] : undefined}
+            sortIndex={sortIndex}
+            totalSorts={state.sorts.length}
+            width={state.columnSizing[col.id]}
+            onSort={handleSort}
+            enableResize={enableColumnResize}
+            onResize={(id, w) => dispatch({ type: 'SET_COLUMN_SIZE', columnId: id, width: w })}
+            enableMenu={enableColumnVisibility}
+            menuOpen={isMenuOpen}
+            onToggleMenu={handleToggleMenu}
+            filterActive={filterActive}
+            filterPanelOpen={filterPanelOpen}
+            onToggleFilter={col.filterable !== false ? handleToggleFilter : undefined}
+            columnMenuSlot={
+              enableColumnVisibility && isMenuOpen && menuAnchorRect ? (
+                <ColumnMenu
+                  columns={columns}
+                  columnVisibility={state.columnVisibility}
+                  anchorRect={menuAnchorRect}
+                  onToggleColumn={handleColumnVisibilityToggle}
+                  onClose={() => setMenuOpenForColumn(null)}
+                />
+              ) : null
+            }
+          />
+        )
+      })}
+    </tr>
+  )
+
+  const renderBodyRows = () => {
+    if (displayRows.length === 0) {
+      return (
+        <tr>
+          <td colSpan={visibleColumns.length + (selectionMode !== 'none' ? 1 : 0)}>
+            <div className={styles.emptyState}>
+              {emptyState ?? 'No data'}
+            </div>
+          </td>
+        </tr>
+      )
+    }
+
+    if (!virtualScrollEnabled) {
+      return displayRows.map((displayRow, i) => {
+        if (displayRow._type === 'group') {
+          return (
+            <GroupRow
+              key={displayRow.id}
+              row={displayRow}
+              columns={columns}
+              visibleColumnIds={visibleColumnIds}
+              onToggle={() => dispatch({ type: 'TOGGLE_EXPAND', groupId: displayRow.id })}
+            />
+          )
+        }
+        const rowId = getRowId(displayRow.row)
+        return (
+          <Row
+            key={rowId}
+            row={displayRow.row}
+            rowIndex={i}
+            rowId={rowId}
+            columns={columns}
+            visibleColumnIds={visibleColumnIds}
+            selectionMode={selectionMode}
+            isSelected={state.selection.has(rowId)}
+            onToggleSelect={handleToggleSelect}
+            onRowClick={onRowClick}
+            onCellClick={onCellClick}
+            editingColumnId={editingCell?.rowId === rowId ? editingCell.columnId : undefined}
+            onStartEdit={onCellEdit ? handleStartEdit : undefined}
+            onCommitEdit={onCellEdit ? handleCommitEdit : undefined}
+            onCancelEdit={handleCancelEdit}
+          />
+        )
+      })
+    }
+
+    // Virtual scroll: render only virtualItems, with spacer rows for offset
+    const paddingTop = virtualItems.length > 0 ? (virtualItems[0]?.start ?? 0) : 0
+    const paddingBottom = virtualItems.length > 0
+      ? virtualizer.getTotalSize() - (virtualItems[virtualItems.length - 1]?.end ?? 0)
+      : 0
+
+    return (
+      <>
+        {paddingTop > 0 && <tr><td style={{ height: paddingTop, padding: 0, border: 'none' }} colSpan={colWidths.length} /></tr>}
+        {virtualItems.map((virtualRow) => {
+          const displayRow = displayRows[virtualRow.index]
+          if (displayRow._type === 'group') {
+            return (
+              <GroupRow
+                key={displayRow.id}
+                row={displayRow}
+                columns={columns}
+                visibleColumnIds={visibleColumnIds}
+                onToggle={() => dispatch({ type: 'TOGGLE_EXPAND', groupId: displayRow.id })}
+              />
+            )
+          }
+          const rowId = getRowId(displayRow.row)
+          return (
+            <Row
+              key={rowId}
+              row={displayRow.row}
+              rowIndex={virtualRow.index}
+              rowId={rowId}
+              columns={columns}
+              visibleColumnIds={visibleColumnIds}
+              selectionMode={selectionMode}
+              isSelected={state.selection.has(rowId)}
+              onToggleSelect={handleToggleSelect}
+              onRowClick={onRowClick}
+              onCellClick={onCellClick}
+              editingColumnId={editingCell?.rowId === rowId ? editingCell.columnId : undefined}
+              onStartEdit={onCellEdit ? handleStartEdit : undefined}
+              onCommitEdit={onCellEdit ? handleCommitEdit : undefined}
+              onCancelEdit={handleCancelEdit}
+            />
+          )
+        })}
+        {paddingBottom > 0 && <tr><td style={{ height: paddingBottom, padding: 0, border: 'none' }} colSpan={colWidths.length} /></tr>}
+      </>
+    )
+  }
+
+  const resolvedHeight = typeof height === 'number' ? `${height}px` : height
 
   return (
     <div className={[styles.wrapper, className].filter(Boolean).join(' ')}>
@@ -305,119 +511,54 @@ function DataGridInner<T>(
         />
       )}
 
-      <div className={styles.tableContainer}>
-        {loading && (
-          <div className={styles.loadingOverlay} role="status" aria-label="Loading">
-            <div className={styles.spinner} />
-          </div>
-        )}
+      {loading && (
+        <div className={styles.loadingOverlay} role="status" aria-label="Loading">
+          <div className={styles.spinner} />
+        </div>
+      )}
 
-        <table className={styles.table} role="grid">
-          <thead>
-            <tr>
-              {selectionMode !== 'none' && (
-                <SelectionCell
-                  checked={allPageSelected}
-                  indeterminate={somePageSelected}
-                  onChange={handleToggleAll}
-                  ariaLabel={allPageSelected ? 'Deselect all' : 'Select all'}
-                  isHeader
-                />
-              )}
-              {visibleColumns.map((col) => {
-                const sortIndex = state.sorts.findIndex((s) => s.columnId === col.id)
-                const isMenuOpen = menuOpenForColumn === col.id
-                return (
-                  <HeaderCell
-                    key={col.id}
-                    column={col}
-                    sortEntry={sortIndex >= 0 ? state.sorts[sortIndex] : undefined}
-                    sortIndex={sortIndex}
-                    totalSorts={state.sorts.length}
-                    width={state.columnSizing[col.id]}
-                    onSort={handleSort}
-                    enableResize={enableColumnResize}
-                    onResize={(id, w) => dispatch({ type: 'SET_COLUMN_SIZE', columnId: id, width: w })}
-                    enableMenu={enableColumnVisibility}
-                    menuOpen={isMenuOpen}
-                    onToggleMenu={handleToggleMenu}
-                    columnMenuSlot={
-                      enableColumnVisibility && isMenuOpen && menuAnchorRect ? (
-                        <ColumnMenu
-                          columns={columns}
-                          columnVisibility={state.columnVisibility}
-                          anchorRect={menuAnchorRect}
-                          onToggleColumn={handleColumnVisibilityToggle}
-                          onClose={() => setMenuOpenForColumn(null)}
-                        />
-                      ) : null
-                    }
-                  />
-                )
-              })}
-            </tr>
-            {hasFilterableColumn && (
-              <tr className={styles.filterRow}>
-                {selectionMode !== 'none' && <td />}
-                {visibleColumns.map((col) => {
-                  const filterEntry = state.filters.find((f) => f.columnId === col.id)
-                  return (
-                    <FilterControl
-                      key={col.id}
-                      column={col}
-                      value={filterEntry?.value ?? null}
-                      operator={filterEntry?.operator ?? null}
-                      onChange={(value, operator) => handleFilterChange(col.id, value, operator)}
-                      filterOptions={derivedFilterOptions[col.id] ?? fetchedFilterOptions[col.id]}
-                    />
-                  )
-                })}
-              </tr>
-            )}
-          </thead>
-          <tbody>
-            {displayRows.length === 0 ? (
-              <tr>
-                <td colSpan={visibleColumns.length + (selectionMode !== 'none' ? 1 : 0)}>
-                  <div className={styles.emptyState}>
-                    {emptyState ?? 'No data'}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              displayRows.map((displayRow, i) => {
-                if (displayRow._type === 'group') {
-                  return (
-                    <GroupRow
-                      key={displayRow.id}
-                      row={displayRow}
-                      columns={columns}
-                      visibleColumnIds={visibleColumnIds}
-                      onToggle={() => dispatch({ type: 'TOGGLE_EXPAND', groupId: displayRow.id })}
-                    />
-                  )
-                }
-                const rowId = getRowId(displayRow.row)
-                return (
-                  <Row
-                    key={rowId}
-                    row={displayRow.row}
-                    rowIndex={i}
-                    rowId={rowId}
-                    columns={columns}
-                    visibleColumnIds={visibleColumnIds}
-                    selectionMode={selectionMode}
-                    isSelected={state.selection.has(rowId)}
-                    onToggleSelect={handleToggleSelect}
-                    onRowClick={onRowClick}
-                    onCellClick={onCellClick}
-                  />
-                )
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      {virtualScrollEnabled ? (
+        // Two-table layout: header is outside the scroll container so it stays sticky.
+        <div className={styles.vsOuter}>
+          <table className={styles.table} role="presentation" aria-hidden>
+            {colgroup}
+            <thead>{headerRow}</thead>
+          </table>
+          <div
+            ref={scrollContainerRef}
+            className={styles.vsBody}
+            style={{ height: resolvedHeight, overflowY: 'auto' }}
+          >
+            <table className={styles.table} role="grid">
+              {colgroup}
+              <tbody>{renderBodyRows()}</tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.tableContainer}>
+          <table className={styles.table} role="grid">
+            <thead>{headerRow}</thead>
+            <tbody>{renderBodyRows()}</tbody>
+          </table>
+        </div>
+      )}
+
+      {filterPanelColumn !== null && filterPanelAnchorRect !== null && (() => {
+        const col = columns.find((c) => c.id === filterPanelColumn)
+        if (!col) return null
+        const filterEntry = state.filters.find((f) => f.columnId === filterPanelColumn)
+        return (
+          <FilterPanel
+            column={col as ColumnDef<unknown>}
+            anchorRect={filterPanelAnchorRect}
+            filterEntry={filterEntry}
+            filterOptions={derivedFilterOptions[filterPanelColumn] ?? fetchedFilterOptions[filterPanelColumn]}
+            onChange={(value, operator) => handleFilterChange(filterPanelColumn, value, operator)}
+            onClose={() => { setFilterPanelColumn(null); setFilterPanelAnchorRect(null) }}
+          />
+        )
+      })()}
 
       <Pagination
         pageIndex={state.pagination.pageIndex}

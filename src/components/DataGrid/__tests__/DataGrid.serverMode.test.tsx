@@ -1,3 +1,4 @@
+import React from 'react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, within, act } from '@testing-library/react'
 import { DataGrid } from '../DataGrid'
@@ -68,8 +69,10 @@ describe('DataGrid — server mode', () => {
 
   it('resets pageIndex to 0 when a filter changes', () => {
     const onChange = vi.fn()
+    const gridRef = React.createRef<import('../types').GridRef<Row>>()
     render(
       <DataGrid
+        ref={gridRef}
         dataMode="server"
         data={makeRows(5)}
         columns={cols}
@@ -81,9 +84,9 @@ describe('DataGrid — server mode', () => {
       />,
     )
     onChange.mockClear()
-    const filterInput = screen.getByLabelText('Filter by Amount')
-    fireEvent.change(filterInput, { target: { value: '10' } })
-    act(() => { vi.runAllTimers() }) // flush debounce through React's update cycle
+    act(() => {
+      gridRef.current!.setState({ filters: [{ columnId: 'amount', operator: 'gt', value: 10 }] })
+    })
     expect(onChange).toHaveBeenCalledTimes(1)
     expect(onChange.mock.calls[0][0].pagination.pageIndex).toBe(0)
   })
