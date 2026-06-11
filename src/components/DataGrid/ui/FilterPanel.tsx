@@ -96,7 +96,7 @@ export function FilterPanel<T>({
       aria-modal="false"
     >
       <p id={headingId} className={styles.heading}>
-        Filter: {column.header}
+        Filter {column.header}
       </p>
 
       {filterType === 'number' && (

@@ -1,2 +1,13 @@
 export { DataGrid } from './DataGrid'
-export type { ColumnDef, DataGridProps, GridRef, GridState, SortEntry, FilterEntry } from './types'
+export type {
+  ColumnDef,
+  DataGridProps,
+  GridRef,
+  GridState,
+  SortEntry,
+  FilterEntry,
+  PaginationState,
+  DisplayRow,
+  GroupHeaderRow,
+  DataDisplayRow,
+} from './types'

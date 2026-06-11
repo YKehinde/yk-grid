@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "emitDeclarationOnly": true,
+    "declarationDir": "dist/types",
+    "rootDir": "src/components/DataGrid"
+  },
+  "include": ["src/components/DataGrid", "src/types"],
+  "exclude": ["node_modules", "src/components/DataGrid/__tests__"]
+}
