@@ -1,27 +1,89 @@
 .th {
   user-select: none;
-  overflow: hidden;
-  white-space: nowrap;
+  position: relative;
 }
 
+.label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 40px; /* room for headerActions */
+}
+
+.indicators {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  font-size: 0.75em;
+  color: currentColor;
+  opacity: 0.6;
+}
+
+.th[aria-sort="ascending"] .indicators,
+.th[aria-sort="descending"] .indicators {
+  opacity: 1;
+}
+
+.arrow {
+  font-size: 0.85em;
+}
+
+.arrowIdle {
+  font-size: 0.85em;
+  opacity: 0.4;
+}
+
+.sortIndex {
+  font-size: 0.7em;
+  font-weight: 600;
+  background: var(--grid-border-colour);
+  border-radius: 2px;
+  padding: 0 2px;
+  line-height: 1.4;
+}
+
+/* Both filter and menu buttons sit in this absolutely-positioned container */
 .headerActions {
   position: absolute;
   top: 50%;
   right: 20px;
   transform: translateY(-50%);
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   opacity: 0;
 }
 
 .th:hover .headerActions,
-.th:has(.filterBtnActive) .headerActions,
-.th:has(.menuBtnOpen) .headerActions {
+.th:focus-within .headerActions,
+.th:has(.menuBtnOpen) .headerActions,
+.th:has(.filterBtnActive) .headerActions {
   opacity: 1;
 }
 
-.filterBtn,
+/* Remove the now-redundant individual-button overrides — parent opacity handles it */
+
+.filterBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 3px;
+  line-height: 1;
+  border-radius: 2px;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+}
+
+.filterBtnActive {
+  color: var(--grid-accent, #6366f1);
+}
+
+.filterBtn:focus-visible {
+  outline: 2px solid var(--grid-accent, #6366f1);
+}
+
 .menuBtn {
   background: none;
   border: none;
@@ -35,19 +97,15 @@
   align-items: center;
 }
 
-.filterBtnActive {
-  color: var(--grid-accent, #6366f1);
+.menuBtnOpen {
+  opacity: 1 !important;
 }
 
-.filterBtn:focus-visible,
 .menuBtn:focus-visible {
   outline: 2px solid var(--grid-accent, #6366f1);
 }
 
-.menuBtnOpen {
-  opacity: 1;
-}
-
+/* Resize handle */
 .resizeHandle {
   position: absolute;
   top: 0;
@@ -76,42 +134,4 @@
 .sortable:focus-visible {
   outline: none;
   box-shadow: var(--grid-focus-ring);
-}
-
-.label {
-  display: inline-block;
-  margin-right: 0.25rem;
-}
-
-.indicators {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.125rem;
-  font-size: 0.75em;
-  vertical-align: middle;
-  color: currentColor;
-  opacity: 0.6;
-}
-
-.th[aria-sort="ascending"] .indicators,
-.th[aria-sort="descending"] .indicators {
-  opacity: 1;
-}
-
-.arrow {
-  font-size: 0.85em;
-}
-
-.arrowIdle {
-  font-size: 0.85em;
-  opacity: 0.4;
-}
-
-.sortIndex {
-  font-size: 0.7em;
-  font-weight: 600;
-  background: var(--grid-border-colour);
-  border-radius: 2px;
-  padding: 0 2px;
-  line-height: 1.4;
 }

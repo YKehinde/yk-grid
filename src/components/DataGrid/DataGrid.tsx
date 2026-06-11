@@ -331,9 +331,13 @@ function DataGridInner<T>(
     return widths
   }, [visibleColumns, selectionMode, state.columnSizing])
 
+  // Last column gets no explicit width so it fills remaining container space when
+  // columns are narrower than the viewport. All other columns keep their exact widths.
   const colgroup = (
     <colgroup>
-      {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
+      {colWidths.map((w, i) => (
+        <col key={i} style={i < colWidths.length - 1 ? { width: w } : undefined} />
+      ))}
     </colgroup>
   )
 
@@ -527,7 +531,7 @@ function DataGridInner<T>(
           <div
             ref={scrollContainerRef}
             className={styles.vsBody}
-            style={{ height: resolvedHeight, overflowY: 'auto' }}
+            style={{ height: resolvedHeight, overflowY: 'auto', overflowX: 'clip' }}
           >
             <table className={styles.table} role="grid">
               {colgroup}
