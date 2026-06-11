@@ -37,6 +37,23 @@ describe('DataGrid — filter panel', () => {
   beforeEach(() => { vi.useFakeTimers() })
   afterEach(() => { vi.useRealTimers() })
 
+  it('does not render filter buttons for columns by default', () => {
+    render(
+      <DataGrid<Row>
+        data={data}
+        columns={[
+          { id: 'name', header: 'Name', accessor: (r) => r.name, filterType: 'text' },
+          { id: 'status', header: 'Status', accessor: (r) => r.status, filterType: 'select' },
+        ]}
+        getRowId={(r) => r.id}
+        dataMode="client"
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: 'Filter Name' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Filter Status' })).toBeNull()
+  })
+
   it('renders a filter button for each filterable column', () => {
     renderGrid()
     expect(screen.getByRole('button', { name: 'Filter Name' })).toBeDefined()
