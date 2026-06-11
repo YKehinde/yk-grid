@@ -1,7 +1,7 @@
 {
   "name": "yk-grid",
   "version": "1.0.0",
-  "main": "dist/yk-grid.cjs.js",
+  "main": "dist/yk-grid.umd.js",
   "module": "dist/yk-grid.es.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
