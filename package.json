@@ -4,6 +4,16 @@
   "main": "dist/yk-grid.umd.js",
   "module": "dist/yk-grid.es.js",
   "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/yk-grid.es.js",
+      "require": "./dist/yk-grid.umd.js",
+      "default": "./dist/yk-grid.es.js"
+    },
+    "./dist/yk-grid.css": "./dist/yk-grid.css",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "dev": "vite",
     "dev:example": "vite example --config vite.config.ts",
