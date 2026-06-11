@@ -8,6 +8,8 @@
 }
 
 .checkbox {
+  display: block;
+  margin-inline: auto;
   cursor: pointer;
   width: 16px;
   height: 16px;
