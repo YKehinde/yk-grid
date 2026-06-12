@@ -1,5 +1,6 @@
 ---
 title: Recipes
+render_with_liquid: false
 ---
 
 # Recipes

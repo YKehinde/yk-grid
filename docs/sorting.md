@@ -1,5 +1,6 @@
 ---
 title: Sorting
+render_with_liquid: false
 ---
 
 # Sorting

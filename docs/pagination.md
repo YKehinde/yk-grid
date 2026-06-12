@@ -1,5 +1,6 @@
 ---
 title: Pagination
+render_with_liquid: false
 ---
 
 # Pagination

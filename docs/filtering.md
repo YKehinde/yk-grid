@@ -1,5 +1,6 @@
 ---
 title: Filtering
+render_with_liquid: false
 ---
 
 # Filtering

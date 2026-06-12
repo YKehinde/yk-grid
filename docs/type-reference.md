@@ -1,5 +1,6 @@
 ---
 title: Type reference
+render_with_liquid: false
 ---
 
 # Type reference

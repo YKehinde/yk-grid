@@ -1,5 +1,6 @@
 ---
 title: Getting started
+render_with_liquid: false
 ---
 
 # Getting started

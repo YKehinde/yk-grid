@@ -1,5 +1,6 @@
 ---
 title: Toolbar
+render_with_liquid: false
 ---
 
 # Toolbar & custom actions

@@ -1,5 +1,6 @@
 ---
 title: yk-grid
+render_with_liquid: false
 ---
 
 # yk-grid

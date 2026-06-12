@@ -1,5 +1,6 @@
 ---
 title: AI integration
+render_with_liquid: false
 ---
 
 # AI integration

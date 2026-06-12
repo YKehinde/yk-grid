@@ -1,5 +1,6 @@
 ---
 title: Grouping
+render_with_liquid: false
 ---
 
 # Grouping & aggregations
