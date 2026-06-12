@@ -1,9 +1,6 @@
 ---
 title: Getting started
-render_with_liquid: false
 ---
-
-{% raw %}
 
 # Getting started
 
@@ -179,4 +176,3 @@ For deeper theming (colours, font size, accent), see [Theming](./theming.md).
 - Add the AI command bar → [AI integration](./ai-integration.md)
 - Handle large datasets → [Virtual scrolling](./virtual-scrolling.md)
 
-{% endraw %}

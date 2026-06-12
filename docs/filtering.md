@@ -1,9 +1,6 @@
 ---
 title: Filtering
-render_with_liquid: false
 ---
-
-{% raw %}
 
 # Filtering
 
@@ -211,4 +208,3 @@ In `dataMode="server"` the grid does not filter rows itself. It includes the act
 
 See [Server mode](./server-mode.md) for the full pattern.
 
-{% endraw %}

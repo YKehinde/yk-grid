@@ -1,36 +1,43 @@
 ---
-title: yk-grid
-render_with_liquid: false
+layout: home
+
+hero:
+  name: yk-grid
+  text: React DataGrid with AI
+  tagline: Sorting, filtering, grouping, pagination, virtual scrolling, and a natural-language query bar — production-ready out of the box.
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /getting-started
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/YKehinde/yk-grid
+    - theme: alt
+      text: npm
+      link: https://www.npmjs.com/package/yk-grid
+
+features:
+  - icon: ⚡
+    title: Client & Server Modes
+    details: Full client-side processing or plug in your own data-fetching logic for server-driven pagination, sorting, and filtering.
+
+  - icon: 🤖
+    title: AI Query Bar
+    details: Let users type natural-language queries and have them translated into grid state changes — sorts, filters, grouping — automatically.
+
+  - icon: 🔧
+    title: Composable & Typed
+    details: Fully generic over your row type T. ColumnDef, GridRef, and all callbacks are fully typed with TypeScript.
+
+  - icon: 🎨
+    title: Themeable
+    details: CSS custom properties for every visual token. Dark mode support built in. Drop in your design system's colours without touching a component.
+
+  - icon: 📦
+    title: Tiny footprint
+    details: Ships as ESM + CJS bundles. React, react-dom, and zod are peer deps — nothing extra lands in your bundle.
+
+  - icon: 🗂️
+    title: Grouping & Aggregations
+    details: Group by any column with collapsible rows. Sum, average, count, min, and max aggregations per group out of the box.
 ---
-
-# yk-grid
-
-A production-ready React DataGrid with sorting, filtering, grouping, pagination, virtual scrolling, and an optional AI-powered natural-language query bar.
-
-```bash
-npm install yk-grid
-```
-
-## Documentation
-
-- [Getting started](getting-started) — install, minimal example, TypeScript generics
-- [Column definition](columns) — accessor, cell renderer, width, pinning
-- [Filtering](filtering) — filter types, operators, controlled filters
-- [Sorting](sorting) — single and multi-column sort
-- [Grouping](grouping) — group by column, aggregations, collapsible rows
-- [Pagination](pagination) — page size, controlled pagination
-- [Selection](selection) — single, multiple, and checkbox selection
-- [Toolbar](toolbar) — toolbarActions slot, CSV export
-- [Virtual scrolling](virtual-scrolling) — large datasets, fixed height
-- [Server mode](server-mode) — server-driven data, fetchRows, fetchFilterOptions
-- [AI integration](ai-integration) — AiBar, gridAiRoute, provider setup
-- [Imperative ref API](imperative-ref) — GridRef, setState, getState
-- [Theming](theming) — CSS custom properties, dark mode
-- [Type reference](type-reference) — full TypeScript API
-- [Recipes](recipes) — common patterns and examples
-- [Troubleshooting](troubleshooting)
-
-## Links
-
-- [npm](https://www.npmjs.com/package/yk-grid)
-- [GitHub](https://github.com/YKehinde/yk-grid)
