@@ -45,19 +45,11 @@ export default defineConfig(({ mode }) => {
   build: {
     lib: {
       entry: 'src/components/DataGrid/index.ts',
-      name: 'YkGrid',
+      formats: ['es', 'cjs'],
       fileName: (format) => `yk-grid.${format}.js`,
     },
     rollupOptions: {
       external: ['react', 'react-dom', 'zod', '@tanstack/react-virtual'],
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-          zod: 'Zod',
-          '@tanstack/react-virtual': 'TanStackReactVirtual',
-        },
-      },
     },
   }
   }
