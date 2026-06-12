@@ -1,3 +1,7 @@
+---
+title: Virtual scrolling
+---
+
 # Virtual scrolling
 
 Virtual scrolling renders only the rows currently visible in the viewport, keeping DOM node count constant regardless of dataset size. This makes large datasets (10 000+ rows) fast to render and scroll.

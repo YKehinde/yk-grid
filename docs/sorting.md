@@ -1,3 +1,7 @@
+---
+title: Sorting
+---
+
 # Sorting
 
 ## Enabling sort on a column

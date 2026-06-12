@@ -1,3 +1,7 @@
+---
+title: Type reference
+---
+
 # Type reference
 
 All types are exported from the `yk-grid` package.

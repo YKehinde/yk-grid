@@ -1,3 +1,7 @@
+---
+title: AI integration
+---
+
 # AI integration
 
 The AI bar lets users type natural-language queries ("show failed refunds over £200, sorted by amount") and have them automatically translated into grid state changes (sorts, filters, grouping).

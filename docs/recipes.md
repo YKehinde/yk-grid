@@ -1,3 +1,7 @@
+---
+title: Recipes
+---
+
 # Recipes
 
 Real-world patterns for common scenarios.

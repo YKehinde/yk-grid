@@ -1,3 +1,7 @@
+---
+title: Selection
+---
+
 # Selection
 
 ## Enabling selection
