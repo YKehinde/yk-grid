@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'yk-grid',
   description: 'AI-assisted React DataGrid with sorting, filtering, grouping, pagination, and natural-language query input.',
+  base: '/yk-grid/',
   cleanUrls: true,
   appearance: 'dark',
 
