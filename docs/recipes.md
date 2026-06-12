@@ -1,9 +1,6 @@
 ---
 title: Recipes
-render_with_liquid: false
 ---
-
-{% raw %}
 
 # Recipes
 
@@ -297,4 +294,3 @@ return (
 />
 ```
 
-{% endraw %}

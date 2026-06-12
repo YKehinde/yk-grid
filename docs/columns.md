@@ -1,6 +1,5 @@
 ---
 title: Column definition
-render_with_liquid: false
 ---
 
 # Column definition

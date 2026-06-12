@@ -1,6 +1,5 @@
 ---
 title: Imperative ref API
-render_with_liquid: false
 ---
 
 # Imperative ref API

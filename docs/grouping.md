@@ -1,9 +1,6 @@
 ---
 title: Grouping
-render_with_liquid: false
 ---
-
-{% raw %}
 
 # Grouping & aggregations
 
@@ -140,4 +137,3 @@ In `dataMode="server"` the grid passes `grouping: string[]` in `GridState` to `o
 
 If you prefer fully server-side grouping (pre-grouped responses), do not use the `grouping` state — render custom group rows using the `cell` renderer on a dedicated column instead.
 
-{% endraw %}

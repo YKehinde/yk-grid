@@ -1,9 +1,6 @@
 ---
 title: Sorting
-render_with_liquid: false
 ---
-
-{% raw %}
 
 # Sorting
 
@@ -115,4 +112,3 @@ interface SortEntry {
 }
 ```
 
-{% endraw %}

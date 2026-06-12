@@ -1,6 +1,5 @@
 ---
 title: Server mode
-render_with_liquid: false
 ---
 
 # Server mode
