@@ -1,3 +1,7 @@
+---
+title: Column definition
+---
+
 # Column definition
 
 Every column is a `ColumnDef<T>` object. Only `id`, `header`, and `accessor` are required.

@@ -1,3 +1,7 @@
+---
+title: Grouping
+---
+
 # Grouping & aggregations
 
 ## Enabling grouping on a column

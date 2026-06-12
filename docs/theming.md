@@ -1,3 +1,7 @@
+---
+title: Theming
+---
+
 # Theming
 
 The grid exposes a set of CSS custom properties on its root element. Override them on a parent selector or globally to match your design system.

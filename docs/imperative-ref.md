@@ -1,3 +1,7 @@
+---
+title: Imperative ref API
+---
+
 # Imperative ref API
 
 The `GridRef<T>` interface gives you programmatic access to the grid from outside the component — reading state, mutating state, clearing selection, and triggering export.

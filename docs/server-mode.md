@@ -1,3 +1,7 @@
+---
+title: Server mode
+---
+
 # Server mode
 
 Server mode is for datasets that live on the server and can't (or shouldn't) be sent to the browser all at once. The grid maintains its UI state internally but delegates sorting, filtering, and pagination to your backend.

@@ -1,3 +1,7 @@
+---
+title: Toolbar
+---
+
 # Toolbar & custom actions
 
 ## The toolbar

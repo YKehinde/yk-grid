@@ -1,3 +1,7 @@
+---
+title: Filtering
+---
+
 # Filtering
 
 ## Enabling filters

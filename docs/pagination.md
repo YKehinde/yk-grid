@@ -1,3 +1,7 @@
+---
+title: Pagination
+---
+
 # Pagination
 
 ## Client-side pagination
