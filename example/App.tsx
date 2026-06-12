@@ -1,7 +1,7 @@
 import React from 'react'
 import { DataGrid } from '../src/components/DataGrid'
 import type { ColumnDef } from '../src/components/DataGrid/types'
-import transactions from '../transactions.json'
+import transactions from './transactions_example.json'
 
 interface Transaction {
   id: string
