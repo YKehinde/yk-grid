@@ -28,7 +28,8 @@ export class AnthropicProvider implements LlmProvider {
 
     if (!res.ok) {
       const body = await res.text()
-      throw new Error(`Anthropic API error ${res.status}: ${body}`)
+      console.error(`Anthropic API error ${res.status}: ${body}`)
+      throw new Error(`AI request failed (status ${res.status})`)
     }
 
     const json = await res.json() as { content: Array<{ type: string; text: string }> }

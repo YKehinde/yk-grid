@@ -3,11 +3,12 @@ import { ColumnDef } from '../types'
 function csvCell(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return ''
   const str = String(value)
-  // Quote the cell if it contains a comma, newline, or double-quote.
-  if (str.includes(',') || str.includes('\n') || str.includes('"')) {
-    return `"${str.replace(/"/g, '""')}"`
+  // Prefix formula-trigger characters so spreadsheet apps don't execute them as formulas.
+  const safe = /^[=+\-@\t\r]/.test(str) ? `\t${str}` : str
+  if (safe.includes(',') || safe.includes('\n') || safe.includes('"')) {
+    return `"${safe.replace(/"/g, '""')}"`
   }
-  return str
+  return safe
 }
 
 export function exportCsv<T>(rows: T[], columns: ColumnDef<T>[]): string {

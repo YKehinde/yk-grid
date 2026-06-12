@@ -29,7 +29,8 @@ export class OpenAiProvider implements LlmProvider {
 
     if (!res.ok) {
       const body = await res.text()
-      throw new Error(`OpenAI API error ${res.status}: ${body}`)
+      console.error(`OpenAI API error ${res.status}: ${body}`)
+      throw new Error(`AI request failed (status ${res.status})`)
     }
 
     const json = await res.json() as { choices: Array<{ message: { content: string } }> }
