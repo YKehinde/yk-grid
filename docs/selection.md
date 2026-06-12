@@ -3,6 +3,8 @@ title: Selection
 render_with_liquid: false
 ---
 
+{% raw %}
+
 # Selection
 
 ## Enabling selection
@@ -135,3 +137,5 @@ Row selection (via checkbox) is independent of `onRowClick`. You can use both to
 ```
 
 Clicking the checkbox selects the row. Clicking the rest of the row fires `onRowClick`.
+
+{% endraw %}

@@ -3,6 +3,8 @@ title: Recipes
 render_with_liquid: false
 ---
 
+{% raw %}
+
 # Recipes
 
 Real-world patterns for common scenarios.
@@ -294,3 +296,5 @@ return (
   }}
 />
 ```
+
+{% endraw %}

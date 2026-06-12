@@ -3,6 +3,8 @@ title: AI integration
 render_with_liquid: false
 ---
 
+{% raw %}
+
 # AI integration
 
 The AI bar lets users type natural-language queries ("show failed refunds over £200, sorted by amount") and have them automatically translated into grid state changes (sorts, filters, grouping).
@@ -199,3 +201,5 @@ The mental separation that resolves your discomfort:
 * `endpoint` is transport config, not AI config. It answers "where do I send the request," not "which AI runs." The provider choice lives entirely server-side (env var or injected `LlmProvider`). The prop isn't leaking the AI implementation into the client — the client stays completely provider-agnostic, which is the property you actually want.
 * The handler is reusable; the URL is per-app. Two apps using your library will share the identical handler but mount it at different paths. A prop is the right place for something that varies per consumer.
 
+
+{% endraw %}

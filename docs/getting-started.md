@@ -3,6 +3,8 @@ title: Getting started
 render_with_liquid: false
 ---
 
+{% raw %}
+
 # Getting started
 
 ## Requirements
@@ -176,3 +178,5 @@ For deeper theming (colours, font size, accent), see [Theming](./theming.md).
 - Set up server-driven data → [Server mode](./server-mode.md)
 - Add the AI command bar → [AI integration](./ai-integration.md)
 - Handle large datasets → [Virtual scrolling](./virtual-scrolling.md)
+
+{% endraw %}

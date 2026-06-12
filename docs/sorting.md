@@ -3,6 +3,8 @@ title: Sorting
 render_with_liquid: false
 ---
 
+{% raw %}
+
 # Sorting
 
 ## Enabling sort on a column
@@ -112,3 +114,5 @@ interface SortEntry {
   direction: 'asc' | 'desc'
 }
 ```
+
+{% endraw %}

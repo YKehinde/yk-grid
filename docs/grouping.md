@@ -3,6 +3,8 @@ title: Grouping
 render_with_liquid: false
 ---
 
+{% raw %}
+
 # Grouping & aggregations
 
 ## Enabling grouping on a column
@@ -137,3 +139,5 @@ Sort behaviour with active grouping:
 In `dataMode="server"` the grid passes `grouping: string[]` in `GridState` to `onStateChange`. Group header rows and expand/collapse state are still managed client-side — the server only needs to return the raw rows for the current page; the grid builds the group hierarchy.
 
 If you prefer fully server-side grouping (pre-grouped responses), do not use the `grouping` state — render custom group rows using the `cell` renderer on a dedicated column instead.
+
+{% endraw %}

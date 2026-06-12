@@ -3,6 +3,8 @@ title: Filtering
 render_with_liquid: false
 ---
 
+{% raw %}
+
 # Filtering
 
 ## Enabling filters
@@ -208,3 +210,5 @@ Operator constraints by filter type:
 In `dataMode="server"` the grid does not filter rows itself. It includes the active `filters` in the `GridState` passed to `onStateChange`. Filtering resets the page index to 0 automatically.
 
 See [Server mode](./server-mode.md) for the full pattern.
+
+{% endraw %}

@@ -3,6 +3,8 @@ title: Pagination
 render_with_liquid: false
 ---
 
+{% raw %}
+
 # Pagination
 
 ## Client-side pagination
@@ -127,3 +129,5 @@ async function handleStateChange(state: GridState) {
 
 <DataGrid loading={loading} ... />
 ```
+
+{% endraw %}
