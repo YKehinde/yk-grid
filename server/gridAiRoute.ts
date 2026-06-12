@@ -26,6 +26,7 @@
 import { AnthropicProvider } from './providers/anthropic'
 import { OpenAiProvider } from './providers/openai'
 import { LlmProvider } from './providers/types'
+import { AiCommandSchema } from '../src/components/DataGrid/ai/schema'
 
 interface ColumnMeta {
   id: string
@@ -92,9 +93,17 @@ function extractJson(raw: string): string {
   return fenced ? fenced[1].trim() : raw.trim()
 }
 
+const MAX_PROMPT_LENGTH = 1000
+
 export async function handleGridAiRequest(body: GridAiRequestBody): Promise<unknown> {
-  if (!body.prompt || !Array.isArray(body.columns)) {
-    throw new Error('Invalid request body: prompt and columns are required')
+  if (!body.prompt || typeof body.prompt !== 'string') {
+    throw new Error('Invalid request body: prompt is required')
+  }
+  if (body.prompt.length > MAX_PROMPT_LENGTH) {
+    throw new Error(`Prompt exceeds maximum length of ${MAX_PROMPT_LENGTH} characters`)
+  }
+  if (!Array.isArray(body.columns) || body.columns.length === 0) {
+    throw new Error('Invalid request body: columns must be a non-empty array')
   }
 
   const provider = getProvider()
@@ -103,5 +112,13 @@ export async function handleGridAiRequest(body: GridAiRequestBody): Promise<unkn
 
   const raw = await provider.complete(system, user)
   const jsonStr = extractJson(raw)
-  return JSON.parse(jsonStr)
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(jsonStr)
+  } catch {
+    throw new Error('AI returned an invalid response. Please try again.')
+  }
+
+  return AiCommandSchema.parse(parsed)
 }
