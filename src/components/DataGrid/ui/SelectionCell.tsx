@@ -9,6 +9,12 @@ interface Props {
   isHeader?: boolean
 }
 
+const SELECTION_CELL_STYLE: React.CSSProperties = {
+  width: 40,
+  minWidth: 40,
+  maxWidth: 40,
+}
+
 export function SelectionCell({ checked, indeterminate, onChange, ariaLabel, isHeader = false }: Props) {
   const inputRef = React.useRef<HTMLInputElement>(null)
 
@@ -21,7 +27,11 @@ export function SelectionCell({ checked, indeterminate, onChange, ariaLabel, isH
   const Tag = isHeader ? 'th' : 'td'
 
   return (
-    <Tag className={styles.selectionCell} role={isHeader ? 'columnheader' : 'gridcell'}>
+    <Tag
+      className={styles.selectionCell}
+      role={isHeader ? 'columnheader' : 'gridcell'}
+      style={SELECTION_CELL_STYLE}
+    >
       <input
         ref={inputRef}
         type="checkbox"
