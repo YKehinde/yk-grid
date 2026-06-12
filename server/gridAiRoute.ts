@@ -26,7 +26,7 @@
 import { AnthropicProvider } from './providers/anthropic'
 import { OpenAiProvider } from './providers/openai'
 import { LlmProvider } from './providers/types'
-import { AiCommandSchema } from '../src/components/DataGrid/ai/schema'
+import { AiCommandSchema } from './schema'
 
 interface ColumnMeta {
   id: string
