@@ -42,13 +42,22 @@ describe('DataGrid — selection', () => {
     expect(screen.getAllByRole('checkbox')).toHaveLength(4)
   })
 
-  it('uses a fixed-width selection column', () => {
+  it('uses a fixed-width selection column in non-virtual mode', () => {
     const { container } = renderGrid({ selectionMode: 'multiple' })
     const selectionCol = container.querySelector('colgroup col')
+    const selectionHeader = container.querySelector('thead th')
+    const selectionCell = container.querySelector('tbody td')
+
     expect(selectionCol).toBeInstanceOf(HTMLTableColElement)
     expect((selectionCol as HTMLTableColElement).style.width).toBe('40px')
     expect((selectionCol as HTMLTableColElement).style.minWidth).toBe('40px')
     expect((selectionCol as HTMLTableColElement).style.maxWidth).toBe('40px')
+    expect((selectionHeader as HTMLTableCellElement).style.width).toBe('40px')
+    expect((selectionHeader as HTMLTableCellElement).style.minWidth).toBe('40px')
+    expect((selectionHeader as HTMLTableCellElement).style.maxWidth).toBe('40px')
+    expect((selectionCell as HTMLTableCellElement).style.width).toBe('40px')
+    expect((selectionCell as HTMLTableCellElement).style.minWidth).toBe('40px')
+    expect((selectionCell as HTMLTableCellElement).style.maxWidth).toBe('40px')
   })
 
   it('renders a single header checkbox in single mode', () => {
